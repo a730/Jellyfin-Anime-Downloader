@@ -245,29 +245,27 @@ public class RebuildDownloadHistoryTask : IScheduledTask
             }
         }
 
-        // AniWorld per-language paths
-        foreach (var (langKey, path) in config.AniWorldConfig.DownloadPaths)
+        // Helper to add all targets for a given site config
+        void AddSiteTargets(string source, SiteDownloaderConfig siteConfig)
         {
-            AddTarget(path, langKey, "aniworld");
+            // Per-language paths
+            foreach (var (langKey, path) in siteConfig.DownloadPaths)
+            {
+                AddTarget(path, langKey, source);
+            }
+
+            // General site path
+            if (!string.IsNullOrEmpty(siteConfig.DownloadPath))
+            {
+                AddTarget(siteConfig.DownloadPath, config.GetPreferredLanguage(source), source);
+            }
         }
 
-        // AniWorld general/legacy path
-        if (!string.IsNullOrEmpty(config.AniWorldConfig.DownloadPath))
-        {
-            AddTarget(config.AniWorldConfig.DownloadPath, config.GetPreferredLanguage("aniworld"), "aniworld");
-        }
-
-        // STO per-language paths
-        foreach (var (langKey, path) in config.StoConfig.DownloadPaths)
-        {
-            AddTarget(path, langKey, "sto");
-        }
-
-        // STO general/legacy path
-        if (!string.IsNullOrEmpty(config.StoConfig.DownloadPath))
-        {
-            AddTarget(config.StoConfig.DownloadPath, config.GetPreferredLanguage("sto"), "sto");
-        }
+        AddSiteTargets("aniworld", config.AniWorldConfig);
+        AddSiteTargets("sto", config.StoConfig);
+        AddSiteTargets("mkissa", config.MkissaConfig);
+        AddSiteTargets("miruro", config.MiruroConfig);
+        AddSiteTargets("anime", config.AnimeNexusConfig);
 
         // Legacy global DownloadPath
         if (!string.IsNullOrEmpty(config.DownloadPath))

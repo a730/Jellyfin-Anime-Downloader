@@ -766,7 +766,7 @@ public class DownloadHistoryRecord
     /// <summary>Gets or sets the completed timestamp.</summary>
     public string? CompletedAt { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld" or "sto").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
     public string Source { get; set; } = "aniworld";
 }
 

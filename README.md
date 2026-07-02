@@ -1,9 +1,9 @@
-# Jellyfin AniWorld Downloader
+# Jellyfin AniWorld Multi-Site Downloader
 
 ![GitHub Release](https://img.shields.io/github/v/release/SiroxCW/Jellyfin-AniWorld-Downloader)
 ![GitHub License](https://img.shields.io/github/license/SiroxCW/Jellyfin-AniWorld-Downloader)
 
-A Jellyfin plugin for searching and downloading anime and series from [aniworld.to](https://aniworld.to) and [s.to](https://s.to), directly inside Jellyfin's web interface.
+A Jellyfin plugin for searching and downloading anime and series from [aniworld.to](https://aniworld.to), [s.to](https://s.to), [mkissa.to](https://mkissa.to), [miruro.to](https://miruro.to), and [anime.nexus](https://anime.nexus), directly inside Jellyfin's web interface.
 
 Series View| Search View
 :---:|:---:
@@ -13,8 +13,8 @@ Series View| Search View
 
 - **Search and browse** anime and series with cover art, popular titles, and new releases
 - **Download** individual episodes, full seasons, or entire series
-- **Two sites supported**: aniworld.to (anime) and s.to (series)
-- **Multiple languages**: German Dub, German Sub, English Sub (aniworld), German Dub, English Dub (s.to)
+- **Six sites supported**: aniworld.to, s.to, mkissa.to, miruro.to, and anime.nexus
+- **Multiple languages**: English Dub, English Sub, German Dub, German Sub
 - **Multiple providers**: VOE, Filemoon, Vidoza and Vidmoly
 - **Download manager** with real-time progress, cancel, retry, and batch operations
 - **Automatic retries** with exponential backoff and provider fallback
@@ -91,9 +91,17 @@ After installing, go to **Dashboard > Plugins > AniWorld Downloader** to configu
 | Movie download path | Default save location for movies (should point to a Jellyfin library folder) |
 | Language Fallback order | When the requested language is unavailable, fall back to other languages in the chosen priority order (default: No Fallback) |
 
-### Per-site settings (aniworld.to / s.to)
+### Per-site settings (all 6 sites)
 
 Each site can be enabled or disabled independently and has its own settings. If a per-site setting is left empty, the global default is used.
+
+| Site | Focus | Languages |
+|------|-------|-----------|
+| aniworld.to | Anime | German Dub, English Sub, German Sub |
+| s.to | TV Series | German Dub, English Dub |
+| mkissa.to | Anime | English Dub, English Sub |
+| miruro.to | Anime | English Dub, English Sub |
+| anime.nexus | Anime | English Dub, English Sub |
 
 | Setting | Description |
 |---------|-------------|
@@ -129,7 +137,7 @@ Non-admin users will see an **AniWorld Downloader** entry in the sidebar that op
 
 ## How It Works
 
-### aniworld.to / s.to
+### All supported sites
 
 1. Searches use each site's AJAX search endpoint
 2. Series, season, and episode pages are scraped to find provider links
@@ -139,12 +147,12 @@ Non-admin users will see an **AniWorld Downloader** entry in the sidebar that op
 
 ### Supported providers
 
-| Provider | Site | Method |
-|----------|------|--------|
-| **VOE** | aniworld/s.to | Decodes obfuscated JSON (ROT13, base64, char shift) to extract HLS URLs |
-| **Filemoon** | aniworld/s.to | Handles both modern Byse API (AES-256-GCM) and legacy packed JS |
-| **Vidmoly** | aniworld/s.to | Extracts HLS URLs from JavaScript sources |
-| **Vidoza** | aniworld/s.to | Extracts MP4 URLs from source tags |
+| Provider | Sites | Method |
+|----------|-------|--------|
+| **VOE** | All 6 sites | Decodes obfuscated JSON (ROT13, base64, char shift) to extract HLS URLs |
+| **Filemoon** | All 6 sites | Handles both modern Byse API (AES-256-GCM) and legacy packed JS |
+| **Vidmoly** | All 6 sites | Extracts HLS URLs from JavaScript sources |
+| **Vidoza** | All 6 sites | Extracts MP4 URLs from source tags |
 
 ## Known Issues
 

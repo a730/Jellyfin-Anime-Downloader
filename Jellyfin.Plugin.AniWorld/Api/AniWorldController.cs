@@ -29,6 +29,9 @@ public class AniWorldController : ControllerBase
 {
     private readonly AniWorldService _aniWorldService;
     private readonly StoService _stoService;
+    private readonly MkissaService _mkissaService;
+    private readonly MiruroService _miruroService;
+    private readonly AnimeNexusService _animeNexusService;
     private readonly DownloadService _downloadService;
     private readonly DownloadHistoryService _historyService;
     private readonly IServerConfigurationManager _configManager;
@@ -40,6 +43,9 @@ public class AniWorldController : ControllerBase
     public AniWorldController(
         AniWorldService aniWorldService,
         StoService stoService,
+        MkissaService mkissaService,
+        MiruroService miruroService,
+        AnimeNexusService animeNexusService,
         DownloadService downloadService,
         DownloadHistoryService historyService,
         IServerConfigurationManager configManager,
@@ -47,6 +53,9 @@ public class AniWorldController : ControllerBase
     {
         _aniWorldService = aniWorldService;
         _stoService = stoService;
+        _mkissaService = mkissaService;
+        _miruroService = miruroService;
+        _animeNexusService = animeNexusService;
         _downloadService = downloadService;
         _historyService = historyService;
         _configManager = configManager;
@@ -58,9 +67,14 @@ public class AniWorldController : ControllerBase
     /// </summary>
     private StreamingSiteService GetService(string? source)
     {
-        return string.Equals(source, "sto", StringComparison.OrdinalIgnoreCase)
-            ? _stoService
-            : _aniWorldService;
+        return source?.ToLowerInvariant() switch
+        {
+            "sto" => _stoService,
+            "mkissa" => _mkissaService,
+            "miruro" => _miruroService,
+            "anime" => _animeNexusService,
+            _ => _aniWorldService,
+        };
     }
 
     /// <summary>
@@ -146,6 +160,9 @@ public class AniWorldController : ControllerBase
         {
             aniworld = config?.AniWorldConfig.Enabled ?? true,
             sto = config?.StoConfig.Enabled ?? false,
+            mkissa = config?.MkissaConfig.Enabled ?? false,
+            miruro = config?.MiruroConfig.Enabled ?? false,
+            anime = config?.AnimeNexusConfig.Enabled ?? false,
             aniWorldOnlyGerman = config?.AniWorldConfig.OnlyGermanLanguages ?? false,
             maintenanceMode = config?.MaintenanceMode ?? false,
             maintenanceMessage = config?.MaintenanceMessage ?? string.Empty
@@ -782,6 +799,8 @@ public class AniWorldController : ControllerBase
     /// Serves a language flag SVG by language key.
     /// Accepts an optional source parameter to differentiate flag for language key "2":
     /// aniworld: japanese-english.svg, sto: english.svg.
+    /// For English-focused sources (mkissa, miruro, anime), lang "1" (English Dub) shows english.svg
+    /// and lang "2" (English Sub) also shows english.svg.
     /// </summary>
     [HttpGet("Flag/{lang}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -789,17 +808,34 @@ public class AniWorldController : ControllerBase
     [AllowAnonymous]
     public ActionResult GetFlag(string lang, string? source = null)
     {
+        var isEnglishSource = string.Equals(source, "mkissa", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(source, "miruro", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(source, "anime", StringComparison.OrdinalIgnoreCase);
+
         var isSto = string.Equals(source, "sto", StringComparison.OrdinalIgnoreCase);
 
-        string? resourceName = lang switch
+        string? resourceName;
+        if (isEnglishSource)
         {
-            "1" => "Jellyfin.Plugin.AniWorld.Web.german.svg",
-            "2" => isSto
-                ? "Jellyfin.Plugin.AniWorld.Web.english.svg"
-                : "Jellyfin.Plugin.AniWorld.Web.japanese-english.svg",
-            "3" => "Jellyfin.Plugin.AniWorld.Web.japanese-german.svg",
-            _ => null
-        };
+            resourceName = lang switch
+            {
+                "1" => "Jellyfin.Plugin.AniWorld.Web.english.svg",
+                "2" => "Jellyfin.Plugin.AniWorld.Web.english.svg",
+                _ => null,
+            };
+        }
+        else
+        {
+            resourceName = lang switch
+            {
+                "1" => "Jellyfin.Plugin.AniWorld.Web.german.svg",
+                "2" => isSto
+                    ? "Jellyfin.Plugin.AniWorld.Web.english.svg"
+                    : "Jellyfin.Plugin.AniWorld.Web.japanese-english.svg",
+                "3" => "Jellyfin.Plugin.AniWorld.Web.japanese-german.svg",
+                _ => null,
+            };
+        }
 
         if (resourceName == null)
         {
@@ -817,6 +853,7 @@ public class AniWorldController : ControllerBase
 
     /// <summary>
     /// Serves the site logo SVG for a source.
+    /// Returns a generic or existing logo if a specific one is not available.
     /// </summary>
     [HttpGet("SiteLogo/{source}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -824,16 +861,18 @@ public class AniWorldController : ControllerBase
     [AllowAnonymous]
     public ActionResult GetSiteLogo(string source)
     {
-        var resourceName = source.ToLowerInvariant() switch
+        var lower = source.ToLowerInvariant();
+        var resourceName = lower switch
         {
             "aniworld" => "Jellyfin.Plugin.AniWorld.Web.aniworld.svg",
             "sto" => "Jellyfin.Plugin.AniWorld.Web.sto.svg",
             _ => null
         };
 
+        // Fall back to aniworld logo for unknown sources (e.g. mkissa, miruro, anime)
         if (resourceName == null)
         {
-            return NotFound();
+            resourceName = "Jellyfin.Plugin.AniWorld.Web.aniworld.svg";
         }
 
         var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName);
@@ -893,7 +932,7 @@ public class DownloadRequest
     /// <summary>Gets or sets whether to force re-download even if already downloaded.</summary>
     public bool Force { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld" or "sto").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
     public string? Source { get; set; }
 
     /// <summary>Gets or sets whether this is a priority download (added to front of queue).</summary>
@@ -917,7 +956,7 @@ public class BatchDownloadRequest
     /// <summary>Gets or sets the series title for file naming.</summary>
     public string? SeriesTitle { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld" or "sto").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
     public string? Source { get; set; }
 
     /// <summary>Gets or sets whether this is a priority download (added to front of queue).</summary>
@@ -944,7 +983,7 @@ public class FullSeriesDownloadRequest
     /// <summary>Gets or sets the series title for file naming.</summary>
     public string? SeriesTitle { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld" or "sto").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
     public string? Source { get; set; }
 
     /// <summary>Gets or sets whether this is a priority download (added to front of queue).</summary>

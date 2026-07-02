@@ -12,6 +12,9 @@ public static class UrlValidator
         "aniworld.to", "www.aniworld.to",
         "s.to", "www.s.to",
         "serienstream.to", "www.serienstream.to",
+        "mkissa.to", "www.mkissa.to",
+        "miruro.to", "www.miruro.to",
+        "anime.nexus", "www.anime.nexus",
     };
 
     /// <summary>
@@ -79,7 +82,7 @@ public static class UrlValidator
 
     /// <summary>
     /// Detects the source site from a URL.
-    /// Returns "aniworld" or "sto".
+    /// Returns "aniworld", "sto", "mkissa", "miruro", or "anime".
     /// </summary>
     public static string DetectSource(string url)
     {
@@ -104,6 +107,21 @@ public static class UrlValidator
             {
                 return "sto";
             }
+
+            if (host == "mkissa.to" || host == "www.mkissa.to")
+            {
+                return "mkissa";
+            }
+
+            if (host == "miruro.to" || host == "www.miruro.to")
+            {
+                return "miruro";
+            }
+
+            if (host == "anime.nexus" || host == "www.anime.nexus")
+            {
+                return "anime";
+            }
         }
 
         // Also check raw string for cases without full URI parsing
@@ -111,6 +129,21 @@ public static class UrlValidator
             url.Contains("serienstream.to/", StringComparison.OrdinalIgnoreCase))
         {
             return "sto";
+        }
+
+        if (url.Contains("mkissa.to/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "mkissa";
+        }
+
+        if (url.Contains("miruro.to/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "miruro";
+        }
+
+        if (url.Contains("anime.nexus/", StringComparison.OrdinalIgnoreCase))
+        {
+            return "anime";
         }
 
         return "aniworld";

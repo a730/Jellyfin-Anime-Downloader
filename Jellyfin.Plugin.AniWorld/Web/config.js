@@ -38,6 +38,33 @@ export default function (view, params) {
             view.querySelector('#selStoProvider').value = sto.PreferredProvider || 'VOE';
             view.querySelector('#selStoFallback').value = sto.FallbackProvider || '';
 
+            // Mkissa
+            var mkissa = config.MkissaConfig || {};
+            view.querySelector('#chkMkissaEnabled').checked = mkissa.Enabled !== false;
+            view.querySelector('#txtMkissaPath1').value = mkissa.DownloadPath1 || mkissa.DownloadPath || '';
+            view.querySelector('#txtMkissaPath2').value = mkissa.DownloadPath2 || '';
+            view.querySelector('#selMkissaLanguage').value = mkissa.PreferredLanguage || '1';
+            view.querySelector('#selMkissaProvider').value = mkissa.PreferredProvider || 'VOE';
+            view.querySelector('#selMkissaFallback').value = mkissa.FallbackProvider || '';
+
+            // Miruro
+            var miruro = config.MiruroConfig || {};
+            view.querySelector('#chkMiruroEnabled').checked = miruro.Enabled !== false;
+            view.querySelector('#txtMiruroPath1').value = miruro.DownloadPath1 || miruro.DownloadPath || '';
+            view.querySelector('#txtMiruroPath2').value = miruro.DownloadPath2 || '';
+            view.querySelector('#selMiruroLanguage').value = miruro.PreferredLanguage || '1';
+            view.querySelector('#selMiruroProvider').value = miruro.PreferredProvider || 'VOE';
+            view.querySelector('#selMiruroFallback').value = miruro.FallbackProvider || '';
+
+            // Anime.Nexus
+            var anime = config.AnimeNexusConfig || {};
+            view.querySelector('#chkAnimeNexusEnabled').checked = anime.Enabled !== false;
+            view.querySelector('#txtAnimeNexusPath1').value = anime.DownloadPath1 || anime.DownloadPath || '';
+            view.querySelector('#txtAnimeNexusPath2').value = anime.DownloadPath2 || '';
+            view.querySelector('#selAnimeNexusLanguage').value = anime.PreferredLanguage || '1';
+            view.querySelector('#selAnimeNexusProvider').value = anime.PreferredProvider || 'VOE';
+            view.querySelector('#selAnimeNexusFallback').value = anime.FallbackProvider || '';
+
             Dashboard.hideLoadingMsg();
         });
     }
@@ -84,6 +111,36 @@ export default function (view, params) {
             config.StoConfig.PreferredLanguage = view.querySelector('#selStoLanguage').value;
             config.StoConfig.PreferredProvider = view.querySelector('#selStoProvider').value;
             config.StoConfig.FallbackProvider = view.querySelector('#selStoFallback').value;
+
+            // Mkissa
+            if (!config.MkissaConfig) config.MkissaConfig = {};
+            config.MkissaConfig.Enabled = view.querySelector('#chkMkissaEnabled').checked;
+            config.MkissaConfig.DownloadPath1 = view.querySelector('#txtMkissaPath1').value.trim();
+            config.MkissaConfig.DownloadPath2 = view.querySelector('#txtMkissaPath2').value.trim();
+            config.MkissaConfig.DownloadPath = config.MkissaConfig.DownloadPath1;
+            config.MkissaConfig.PreferredLanguage = view.querySelector('#selMkissaLanguage').value;
+            config.MkissaConfig.PreferredProvider = view.querySelector('#selMkissaProvider').value;
+            config.MkissaConfig.FallbackProvider = view.querySelector('#selMkissaFallback').value;
+
+            // Miruro
+            if (!config.MiruroConfig) config.MiruroConfig = {};
+            config.MiruroConfig.Enabled = view.querySelector('#chkMiruroEnabled').checked;
+            config.MiruroConfig.DownloadPath1 = view.querySelector('#txtMiruroPath1').value.trim();
+            config.MiruroConfig.DownloadPath2 = view.querySelector('#txtMiruroPath2').value.trim();
+            config.MiruroConfig.DownloadPath = config.MiruroConfig.DownloadPath1;
+            config.MiruroConfig.PreferredLanguage = view.querySelector('#selMiruroLanguage').value;
+            config.MiruroConfig.PreferredProvider = view.querySelector('#selMiruroProvider').value;
+            config.MiruroConfig.FallbackProvider = view.querySelector('#selMiruroFallback').value;
+
+            // Anime.Nexus
+            if (!config.AnimeNexusConfig) config.AnimeNexusConfig = {};
+            config.AnimeNexusConfig.Enabled = view.querySelector('#chkAnimeNexusEnabled').checked;
+            config.AnimeNexusConfig.DownloadPath1 = view.querySelector('#txtAnimeNexusPath1').value.trim();
+            config.AnimeNexusConfig.DownloadPath2 = view.querySelector('#txtAnimeNexusPath2').value.trim();
+            config.AnimeNexusConfig.DownloadPath = config.AnimeNexusConfig.DownloadPath1;
+            config.AnimeNexusConfig.PreferredLanguage = view.querySelector('#selAnimeNexusLanguage').value;
+            config.AnimeNexusConfig.PreferredProvider = view.querySelector('#selAnimeNexusProvider').value;
+            config.AnimeNexusConfig.FallbackProvider = view.querySelector('#selAnimeNexusFallback').value;
 
             ApiClient.updatePluginConfiguration(pluginId, config).then(function () {
                 Dashboard.processPluginConfigurationUpdateResult();

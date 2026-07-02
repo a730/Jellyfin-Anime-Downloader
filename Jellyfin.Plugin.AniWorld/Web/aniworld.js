@@ -57,6 +57,9 @@ export default function (view, params) {
         if (source === 'sto') {
             return { '1': 'German Dub', '2': 'English Dub' };
         }
+        if (source === 'mkissa' || source === 'miruro' || source === 'anime' || source === 'anime.nexus') {
+            return { '1': 'English Dub', '2': 'English Sub' };
+        }
         return { '1': 'German Dub', '2': 'English Sub', '3': 'German Sub' };
     }
 
@@ -71,10 +74,14 @@ export default function (view, params) {
     // Build language options HTML for season bar
     function getLangOptionsHtml(source) {
         var html = '<option value="">\uD83C\uDF10 Use Settings Default</option>';
-        html += '<option value="1">\uD83C\uDDE9\uD83C\uDDEA German Dub</option>';
-        if (source === 'sto') {
+        if (source === 'mkissa' || source === 'miruro' || source === 'anime' || source === 'anime.nexus') {
+            html += '<option value="1">\uD83C\uDDEC\uD83C\uDDE7 English Dub</option>';
+            html += '<option value="2">\uD83C\uDDEC\uD83C\uDDE7 English Sub</option>';
+        } else if (source === 'sto') {
+            html += '<option value="1">\uD83C\uDDE9\uD83C\uDDEA German Dub</option>';
             html += '<option value="2">\uD83C\uDDEC\uD83C\uDDE7 English Dub</option>';
         } else {
+            html += '<option value="1">\uD83C\uDDE9\uD83C\uDDEA German Dub</option>';
             html += '<option value="2">\uD83C\uDDEC\uD83C\uDDE7 English Sub</option>';
             html += '<option value="3">\uD83C\uDDE9\uD83C\uDDEA German Sub</option>';
         }
@@ -156,54 +163,66 @@ export default function (view, params) {
             var endpoint = section === 'new' ? 'AniWorld/New' : 'AniWorld/Popular';
             var promises = [];
 
-            // Load from aniworld
-            promises.push(ApiClient.fetch({
-                url: ApiClient.getUrl(endpoint, { source: 'aniworld' }),
-                type: 'GET', dataType: 'json'
-            }).catch(function () { return []; }));
+            // Source names to try
+            var sourceNames = ['aniworld', 'sto', 'mkissa', 'miruro', 'anime'];
 
-            // Load from s.to if enabled (uses EnabledSources endpoint)
             promises.push(ApiClient.fetch({
                 url: ApiClient.getUrl('AniWorld/EnabledSources'),
                 type: 'GET', dataType: 'json'
             }).then(function (sources) {
-                if (sources.sto) {
-                    return ApiClient.fetch({
-                        url: ApiClient.getUrl(endpoint, { source: 'sto' }),
+                var sitePromises = [];
+                sourceNames.forEach(function (src) {
+                    var isEnabled = sources[src];
+                    if (isEnabled === false) return;
+                    sitePromises.push(ApiClient.fetch({
+                        url: ApiClient.getUrl(endpoint, { source: src }),
                         type: 'GET', dataType: 'json'
-                    }).catch(function () { return []; });
-                }
-                return [];
-            }).catch(function () { return []; }));
+                    }).then(function (items) {
+                        return { source: src, items: items };
+                    }).catch(function () { return { source: src, items: [] }; }));
+                });
+                return Promise.all(sitePromises);
+            }).catch(function () {
+                // Fallback: return empty for all sources
+                return sourceNames.map(function (src) { return { source: src, items: [] }; });
+            }));
 
             Promise.all(promises).then(function (results) {
                 AW.browseLoaded[section] = true;
-                AW['browseCache_aniworld_' + section] = results[0] || [];
-                AW['browseCache_sto_' + section] = results[1] || [];
+                var combined = results[0] || [];
+                combined.forEach(function (result) {
+                    AW['browseCache_' + result.source + '_' + section] = result.items || [];
+                });
                 AW._renderBrowseCombined(section, container);
             }).catch(function (err) {
-                container.innerHTML = '<div class="aw-empty"><div class="aw-empty-icon">❌</div>Failed to load: ' + esc(err.message || 'Unknown error') + '</div>';
+                container.innerHTML = '<div class="aw-empty"><div class="aw-empty-icon">\u274C</div>Failed to load: ' + esc(err.message || 'Unknown error') + '</div>';
             });
         },
 
         _renderBrowseCombined: function (section, container) {
-            var awItems = this['browseCache_aniworld_' + section] || [];
-            var stoItems = this['browseCache_sto_' + section] || [];
+            var sourceLabels = {
+                aniworld: 'AniWorld',
+                sto: 's.to',
+                mkissa: 'Mkissa',
+                miruro: 'Miruro',
+                anime: 'Anime.Nexus'
+            };
+            var sourceNames = ['aniworld', 'sto', 'mkissa', 'miruro', 'anime'];
             var html = '';
+            var hasAny = false;
 
-            if (awItems.length === 0 && stoItems.length === 0) {
-                container.innerHTML = '<div class="aw-empty"><div class="aw-empty-icon">📭</div>No content found.</div>';
+            sourceNames.forEach(function (src) {
+                var items = AW['browseCache_' + src + '_' + section] || [];
+                if (items.length > 0) {
+                    hasAny = true;
+                    html += '<div class="aw-browse-section-title">' + (sourceLabels[src] || src) + '</div>';
+                    html += AW._buildBrowseGrid(items, src);
+                }
+            });
+
+            if (!hasAny) {
+                container.innerHTML = '<div class="aw-empty"><div class="aw-empty-icon">\uD83D\uDCED</div>No content found.</div>';
                 return;
-            }
-
-            if (awItems.length > 0) {
-                html += '<div class="aw-browse-section-title">AniWorld</div>';
-                html += this._buildBrowseGrid(awItems, 'aniworld');
-            }
-
-            if (stoItems.length > 0) {
-                html += '<div class="aw-browse-section-title">s.to</div>';
-                html += this._buildBrowseGrid(stoItems, 'sto');
             }
 
             container.innerHTML = html;

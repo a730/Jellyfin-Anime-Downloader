@@ -278,6 +278,210 @@
                         </div>
                     </div>
 
+                    <!-- Mkissa Settings -->
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Mkissa Downloader (mkissa.to)</h3>
+
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input is="emby-checkbox" type="checkbox" id="chkMkissaEnabled" />
+                                <span>Enable Mkissa Downloader</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                Enable searching and downloading anime from mkissa.to.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="txtMkissaPath1">Download Path (English)</label>
+                            <input is="emby-input" type="text" id="txtMkissaPath1"
+                                   placeholder="/media/anime" />
+                            <div class="fieldDescription">
+                                Base directory for English audio downloads.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="txtMkissaPath2">Download Path (Subtitle)</label>
+                            <input is="emby-input" type="text" id="txtMkissaPath2"
+                                   placeholder="/media/anime" />
+                            <div class="fieldDescription">
+                                Base directory for subtitle downloads. Leave empty to use the English path.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selMkissaLanguage">Preferred Language</label>
+                            <select is="emby-select" id="selMkissaLanguage">
+                                <option value="1">English Dub</option>
+                                <option value="2">English Sub</option>
+                            </select>
+                            <div class="fieldDescription">Default language for Mkissa downloads.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selMkissaProvider">Preferred Provider</label>
+                            <select is="emby-select" id="selMkissaProvider">
+                                <option value="VOE">VOE (recommended)</option>
+                                <option value="Filemoon">Filemoon</option>
+                                <option value="Vidmoly">Vidmoly</option>
+                                <option value="Vidoza">Vidoza</option>
+                            </select>
+                            <div class="fieldDescription">Default streaming provider for Mkissa.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selMkissaFallback">Fallback Provider</label>
+                            <select is="emby-select" id="selMkissaFallback">
+                                <option value="">None (no fallback)</option>
+                                <option value="VOE">VOE</option>
+                                <option value="Filemoon">Filemoon</option>
+                                <option value="Vidmoly">Vidmoly</option>
+                                <option value="Vidoza">Vidoza</option>
+                            </select>
+                            <div class="fieldDescription">
+                                If all retries with the preferred provider fail, the download will be retried
+                                with this provider.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Miruro Settings -->
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Miruro Downloader (miruro.to)</h3>
+
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input is="emby-checkbox" type="checkbox" id="chkMiruroEnabled" />
+                                <span>Enable Miruro Downloader</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                Enable searching and downloading anime from miruro.to.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="txtMiruroPath1">Download Path (English Dub)</label>
+                            <input is="emby-input" type="text" id="txtMiruroPath1"
+                                   placeholder="/media/anime" />
+                            <div class="fieldDescription">
+                                Base directory for English Dub downloads.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="txtMiruroPath2">Download Path (English Sub)</label>
+                            <input is="emby-input" type="text" id="txtMiruroPath2"
+                                   placeholder="/media/anime" />
+                            <div class="fieldDescription">
+                                Base directory for English Sub downloads. Leave empty to use the English Dub path.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selMiruroLanguage">Preferred Language</label>
+                            <select is="emby-select" id="selMiruroLanguage">
+                                <option value="1">English Dub</option>
+                                <option value="2">English Sub</option>
+                            </select>
+                            <div class="fieldDescription">Default language for Miruro downloads.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selMiruroProvider">Preferred Provider</label>
+                            <select is="emby-select" id="selMiruroProvider">
+                                <option value="VOE">VOE (recommended)</option>
+                                <option value="Filemoon">Filemoon</option>
+                                <option value="Vidmoly">Vidmoly</option>
+                                <option value="Vidoza">Vidoza</option>
+                            </select>
+                            <div class="fieldDescription">Default streaming provider for Miruro.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selMiruroFallback">Fallback Provider</label>
+                            <select is="emby-select" id="selMiruroFallback">
+                                <option value="">None (no fallback)</option>
+                                <option value="VOE">VOE</option>
+                                <option value="Filemoon">Filemoon</option>
+                                <option value="Vidmoly">Vidmoly</option>
+                                <option value="Vidoza">Vidoza</option>
+                            </select>
+                            <div class="fieldDescription">
+                                If all retries with the preferred provider fail, the download will be retried
+                                with this provider.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Anime.Nexus Settings -->
+                    <div class="verticalSection">
+                        <h3 class="sectionTitle">Anime.Nexus Downloader (anime.nexus)</h3>
+
+                        <div class="checkboxContainer checkboxContainer-withDescription">
+                            <label>
+                                <input is="emby-checkbox" type="checkbox" id="chkAnimeNexusEnabled" />
+                                <span>Enable Anime.Nexus Downloader</span>
+                            </label>
+                            <div class="fieldDescription checkboxFieldDescription">
+                                Enable searching and downloading anime from anime.nexus.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="txtAnimeNexusPath1">Download Path (English Dub)</label>
+                            <input is="emby-input" type="text" id="txtAnimeNexusPath1"
+                                   placeholder="/media/anime" />
+                            <div class="fieldDescription">
+                                Base directory for English Dub downloads.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="txtAnimeNexusPath2">Download Path (English Sub)</label>
+                            <input is="emby-input" type="text" id="txtAnimeNexusPath2"
+                                   placeholder="/media/anime" />
+                            <div class="fieldDescription">
+                                Base directory for English Sub downloads. Leave empty to use the English Dub path.
+                            </div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selAnimeNexusLanguage">Preferred Language</label>
+                            <select is="emby-select" id="selAnimeNexusLanguage">
+                                <option value="1">English Dub</option>
+                                <option value="2">English Sub</option>
+                            </select>
+                            <div class="fieldDescription">Default language for Anime.Nexus downloads.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selAnimeNexusProvider">Preferred Provider</label>
+                            <select is="emby-select" id="selAnimeNexusProvider">
+                                <option value="VOE">VOE (recommended)</option>
+                                <option value="Filemoon">Filemoon</option>
+                                <option value="Vidmoly">Vidmoly</option>
+                                <option value="Vidoza">Vidoza</option>
+                            </select>
+                            <div class="fieldDescription">Default streaming provider for Anime.Nexus.</div>
+                        </div>
+
+                        <div class="inputContainer">
+                            <label class="inputLabel" for="selAnimeNexusFallback">Fallback Provider</label>
+                            <select is="emby-select" id="selAnimeNexusFallback">
+                                <option value="">None (no fallback)</option>
+                                <option value="VOE">VOE</option>
+                                <option value="Filemoon">Filemoon</option>
+                                <option value="Vidmoly">Vidmoly</option>
+                                <option value="Vidoza">Vidoza</option>
+                            </select>
+                            <div class="fieldDescription">
+                                If all retries with the preferred provider fail, the download will be retried
+                                with this provider.
+                            </div>
+                        </div>
+                    </div>
+
                     <div>
                         <button is="emby-button" type="submit" class="raised button-submit block">
                             <span>Save</span>
