@@ -4,7 +4,7 @@
     "name": "AniWorld Multi-Site Downloader",
     "description": "Search, browse, and download anime and series from aniworld.to, s.to, aniwatch.one, and animex.one directly within Jellyfin. Supports VOE, Filemoon, Vidoza, and Vidmoly providers with multiple language options including English Dub and English Sub.",
     "overview": "Download anime from aniworld.to, s.to, aniwatch.one, and animex.one directly within Jellyfin",
-    "owner": "SiroxCW",
+    "owner": "Leo",
     "category": "General",
     "versions": [
       {
