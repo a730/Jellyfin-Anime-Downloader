@@ -208,6 +208,32 @@ public class AniWorldController : ControllerBase
                 }
             }
 
+            if (config?.AniWatchConfig.Enabled != false)
+            {
+                try
+                {
+                    var awResults = await _aniWatchService.SearchAsync(query, cancellationToken).ConfigureAwait(false);
+                    results.AddRange(awResults);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "AniWatch search failed for query: {Query}", query);
+                }
+            }
+
+            if (config?.AnimeXConfig.Enabled != false)
+            {
+                try
+                {
+                    var axResults = await _animeXService.SearchAsync(query, cancellationToken).ConfigureAwait(false);
+                    results.AddRange(axResults);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "AnimeX search failed for query: {Query}", query);
+                }
+            }
+
             return Ok(results);
         }
 
