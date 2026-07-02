@@ -25,10 +25,10 @@ jobs:
           dotnet-version: 9.0.x
 
       - name: Restore
-        run: dotnet restore
+        run: dotnet restore Jellyfin.Plugin.AniWorld/Jellyfin.Plugin.AniWorld.csproj
 
       - name: Build
-        run: dotnet build -c Release --no-restore
+        run: dotnet build Jellyfin.Plugin.AniWorld/Jellyfin.Plugin.AniWorld.csproj -c Release --no-restore
 
       - name: Determine version
         id: version
