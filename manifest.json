@@ -12,8 +12,8 @@
         "changelog": "v1.8.0.0\n- Replaced mkissa.to, miruro.to, and anime.nexus with aniwatch.one and animex.one\n- aniwatch.one: full server-rendered HTML scraping (search, series info, episodes, providers)\n- animex.one: SvelteKit SPA support with JSON-LD metadata extraction and AniList ID integration\n- Both new sites support English Sub and English Dub with VOE, Filemoon, Vidmoly, and Vidoza providers",
         "targetAbi": "10.11.0.0",
         "sourceUrl": "https://github.com/a730/Jellyfin-Anime-Downloader/releases/download/v1.8.0.0/jellyfin-aniworld-downloader-v1.8.0.0.zip",
-        "checksum": "33b21a0ce4bbb948902b0cf82f54c700",
-        "timestamp": "2026-07-02T20:02:30Z"
+        "checksum": "bc657beb79e567041b7c94d7e37481a9",
+        "timestamp": "2026-07-02T20:03:44Z"
       },
       {
         "version": "1.7.0.0",
