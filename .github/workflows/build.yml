@@ -51,7 +51,7 @@ jobs:
       - name: Compute checksum
         id: checksum
         run: |
-          echo "sha256=$(sha256sum Jellyfin.Plugin.AniWorld-${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "md5=$(md5sum Jellyfin.Plugin.AniWorld-${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
@@ -82,7 +82,7 @@ jobs:
           jq -n --arg version "$VERSION" \
             --arg changelog "$(jq -r '.changelog' Jellyfin.Plugin.AniWorld/meta.json)" \
             --arg timestamp "$TIMESTAMP" \
-            --arg sha256 "${{ steps.checksum.outputs.sha256 }}" \
+            --arg md5 "${{ steps.checksum.outputs.md5 }}" \
             --arg url "https://github.com/${{ github.repository }}/releases/download/v$VERSION/Jellyfin.Plugin.AniWorld-$VERSION.zip" \
             '[
               {
@@ -99,8 +99,7 @@ jobs:
                     targetAbi: "10.11.0.0",
                     timestamp: $timestamp,
                     sourceUrl: $url,
-                    checksum: $sha256,
-                    checksumType: "sha256"
+                    checksum: $md5
                   }
                 ]
               }
