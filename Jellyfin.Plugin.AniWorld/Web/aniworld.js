@@ -57,7 +57,7 @@ export default function (view, params) {
         if (source === 'sto') {
             return { '1': 'German Dub', '2': 'English Dub' };
         }
-        if (source === 'mkissa' || source === 'miruro' || source === 'anime' || source === 'anime.nexus') {
+        if (source === 'aniwatch' || source === 'animex') {
             return { '1': 'English Dub', '2': 'English Sub' };
         }
         return { '1': 'German Dub', '2': 'English Sub', '3': 'German Sub' };
@@ -74,7 +74,7 @@ export default function (view, params) {
     // Build language options HTML for season bar
     function getLangOptionsHtml(source) {
         var html = '<option value="">\uD83C\uDF10 Use Settings Default</option>';
-        if (source === 'mkissa' || source === 'miruro' || source === 'anime' || source === 'anime.nexus') {
+        if (source === 'aniwatch' || source === 'animex') {
             html += '<option value="1">\uD83C\uDDEC\uD83C\uDDE7 English Dub</option>';
             html += '<option value="2">\uD83C\uDDEC\uD83C\uDDE7 English Sub</option>';
         } else if (source === 'sto') {
@@ -164,7 +164,7 @@ export default function (view, params) {
             var promises = [];
 
             // Source names to try
-            var sourceNames = ['aniworld', 'sto', 'mkissa', 'miruro', 'anime'];
+            var sourceNames = ['aniworld', 'sto', 'aniwatch', 'animex'];
 
             promises.push(ApiClient.fetch({
                 url: ApiClient.getUrl('AniWorld/EnabledSources'),
@@ -203,11 +203,10 @@ export default function (view, params) {
             var sourceLabels = {
                 aniworld: 'AniWorld',
                 sto: 's.to',
-                mkissa: 'Mkissa',
-                miruro: 'Miruro',
-                anime: 'Anime.Nexus'
+                aniwatch: 'AniWatch',
+                animex: 'AnimeX'
             };
-            var sourceNames = ['aniworld', 'sto', 'mkissa', 'miruro', 'anime'];
+            var sourceNames = ['aniworld', 'sto', 'aniwatch', 'animex'];
             var html = '';
             var hasAny = false;
 

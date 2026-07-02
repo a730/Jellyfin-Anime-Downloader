@@ -278,61 +278,61 @@
                         </div>
                     </div>
 
-                    <!-- Mkissa Settings -->
+                    <!-- AniWatch Settings -->
                     <div class="verticalSection">
-                        <h3 class="sectionTitle">Mkissa Downloader (mkissa.to)</h3>
+                        <h3 class="sectionTitle">AniWatch Downloader (aniwatch.one)</h3>
 
                         <div class="checkboxContainer checkboxContainer-withDescription">
                             <label>
-                                <input is="emby-checkbox" type="checkbox" id="chkMkissaEnabled" />
-                                <span>Enable Mkissa Downloader</span>
+                                <input is="emby-checkbox" type="checkbox" id="chkAniWatchEnabled" />
+                                <span>Enable AniWatch Downloader</span>
                             </label>
                             <div class="fieldDescription checkboxFieldDescription">
-                                Enable searching and downloading anime from mkissa.to.
+                                Enable searching and downloading anime from aniwatch.one (English Sub/Dub).
                             </div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="txtMkissaPath1">Download Path (English)</label>
-                            <input is="emby-input" type="text" id="txtMkissaPath1"
+                            <label class="inputLabel" for="txtAniWatchPath1">Download Path (English Dub)</label>
+                            <input is="emby-input" type="text" id="txtAniWatchPath1"
                                    placeholder="/media/anime" />
                             <div class="fieldDescription">
-                                Base directory for English audio downloads.
+                                Base directory for English Dub downloads.
                             </div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="txtMkissaPath2">Download Path (Subtitle)</label>
-                            <input is="emby-input" type="text" id="txtMkissaPath2"
+                            <label class="inputLabel" for="txtAniWatchPath2">Download Path (English Sub)</label>
+                            <input is="emby-input" type="text" id="txtAniWatchPath2"
                                    placeholder="/media/anime" />
                             <div class="fieldDescription">
-                                Base directory for subtitle downloads. Leave empty to use the English path.
+                                Base directory for English Sub downloads. Leave empty to use the English Dub path.
                             </div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="selMkissaLanguage">Preferred Language</label>
-                            <select is="emby-select" id="selMkissaLanguage">
+                            <label class="inputLabel" for="selAniWatchLanguage">Preferred Language</label>
+                            <select is="emby-select" id="selAniWatchLanguage">
                                 <option value="1">English Dub</option>
                                 <option value="2">English Sub</option>
                             </select>
-                            <div class="fieldDescription">Default language for Mkissa downloads.</div>
+                            <div class="fieldDescription">Default language for AniWatch downloads.</div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="selMkissaProvider">Preferred Provider</label>
-                            <select is="emby-select" id="selMkissaProvider">
+                            <label class="inputLabel" for="selAniWatchProvider">Preferred Provider</label>
+                            <select is="emby-select" id="selAniWatchProvider">
                                 <option value="VOE">VOE (recommended)</option>
                                 <option value="Filemoon">Filemoon</option>
                                 <option value="Vidmoly">Vidmoly</option>
                                 <option value="Vidoza">Vidoza</option>
                             </select>
-                            <div class="fieldDescription">Default streaming provider for Mkissa.</div>
+                            <div class="fieldDescription">Default streaming provider for AniWatch.</div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="selMkissaFallback">Fallback Provider</label>
-                            <select is="emby-select" id="selMkissaFallback">
+                            <label class="inputLabel" for="selAniWatchFallback">Fallback Provider</label>
+                            <select is="emby-select" id="selAniWatchFallback">
                                 <option value="">None (no fallback)</option>
                                 <option value="VOE">VOE</option>
                                 <option value="Filemoon">Filemoon</option>
@@ -346,23 +346,23 @@
                         </div>
                     </div>
 
-                    <!-- Miruro Settings -->
+                    <!-- AnimeX Settings -->
                     <div class="verticalSection">
-                        <h3 class="sectionTitle">Miruro Downloader (miruro.to)</h3>
+                        <h3 class="sectionTitle">AnimeX Downloader (animex.one)</h3>
 
                         <div class="checkboxContainer checkboxContainer-withDescription">
                             <label>
-                                <input is="emby-checkbox" type="checkbox" id="chkMiruroEnabled" />
-                                <span>Enable Miruro Downloader</span>
+                                <input is="emby-checkbox" type="checkbox" id="chkAnimeXEnabled" />
+                                <span>Enable AnimeX Downloader</span>
                             </label>
                             <div class="fieldDescription checkboxFieldDescription">
-                                Enable searching and downloading anime from miruro.to.
+                                Enable searching and downloading anime from animex.one (English Sub/Dub).
                             </div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="txtMiruroPath1">Download Path (English Dub)</label>
-                            <input is="emby-input" type="text" id="txtMiruroPath1"
+                            <label class="inputLabel" for="txtAnimeXPath1">Download Path (English Dub)</label>
+                            <input is="emby-input" type="text" id="txtAnimeXPath1"
                                    placeholder="/media/anime" />
                             <div class="fieldDescription">
                                 Base directory for English Dub downloads.
@@ -370,8 +370,8 @@
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="txtMiruroPath2">Download Path (English Sub)</label>
-                            <input is="emby-input" type="text" id="txtMiruroPath2"
+                            <label class="inputLabel" for="txtAnimeXPath2">Download Path (English Sub)</label>
+                            <input is="emby-input" type="text" id="txtAnimeXPath2"
                                    placeholder="/media/anime" />
                             <div class="fieldDescription">
                                 Base directory for English Sub downloads. Leave empty to use the English Dub path.
@@ -379,96 +379,28 @@
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="selMiruroLanguage">Preferred Language</label>
-                            <select is="emby-select" id="selMiruroLanguage">
+                            <label class="inputLabel" for="selAnimeXLanguage">Preferred Language</label>
+                            <select is="emby-select" id="selAnimeXLanguage">
                                 <option value="1">English Dub</option>
                                 <option value="2">English Sub</option>
                             </select>
-                            <div class="fieldDescription">Default language for Miruro downloads.</div>
+                            <div class="fieldDescription">Default language for AnimeX downloads.</div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="selMiruroProvider">Preferred Provider</label>
-                            <select is="emby-select" id="selMiruroProvider">
+                            <label class="inputLabel" for="selAnimeXProvider">Preferred Provider</label>
+                            <select is="emby-select" id="selAnimeXProvider">
                                 <option value="VOE">VOE (recommended)</option>
                                 <option value="Filemoon">Filemoon</option>
                                 <option value="Vidmoly">Vidmoly</option>
                                 <option value="Vidoza">Vidoza</option>
                             </select>
-                            <div class="fieldDescription">Default streaming provider for Miruro.</div>
+                            <div class="fieldDescription">Default streaming provider for AnimeX.</div>
                         </div>
 
                         <div class="inputContainer">
-                            <label class="inputLabel" for="selMiruroFallback">Fallback Provider</label>
-                            <select is="emby-select" id="selMiruroFallback">
-                                <option value="">None (no fallback)</option>
-                                <option value="VOE">VOE</option>
-                                <option value="Filemoon">Filemoon</option>
-                                <option value="Vidmoly">Vidmoly</option>
-                                <option value="Vidoza">Vidoza</option>
-                            </select>
-                            <div class="fieldDescription">
-                                If all retries with the preferred provider fail, the download will be retried
-                                with this provider.
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Anime.Nexus Settings -->
-                    <div class="verticalSection">
-                        <h3 class="sectionTitle">Anime.Nexus Downloader (anime.nexus)</h3>
-
-                        <div class="checkboxContainer checkboxContainer-withDescription">
-                            <label>
-                                <input is="emby-checkbox" type="checkbox" id="chkAnimeNexusEnabled" />
-                                <span>Enable Anime.Nexus Downloader</span>
-                            </label>
-                            <div class="fieldDescription checkboxFieldDescription">
-                                Enable searching and downloading anime from anime.nexus.
-                            </div>
-                        </div>
-
-                        <div class="inputContainer">
-                            <label class="inputLabel" for="txtAnimeNexusPath1">Download Path (English Dub)</label>
-                            <input is="emby-input" type="text" id="txtAnimeNexusPath1"
-                                   placeholder="/media/anime" />
-                            <div class="fieldDescription">
-                                Base directory for English Dub downloads.
-                            </div>
-                        </div>
-
-                        <div class="inputContainer">
-                            <label class="inputLabel" for="txtAnimeNexusPath2">Download Path (English Sub)</label>
-                            <input is="emby-input" type="text" id="txtAnimeNexusPath2"
-                                   placeholder="/media/anime" />
-                            <div class="fieldDescription">
-                                Base directory for English Sub downloads. Leave empty to use the English Dub path.
-                            </div>
-                        </div>
-
-                        <div class="inputContainer">
-                            <label class="inputLabel" for="selAnimeNexusLanguage">Preferred Language</label>
-                            <select is="emby-select" id="selAnimeNexusLanguage">
-                                <option value="1">English Dub</option>
-                                <option value="2">English Sub</option>
-                            </select>
-                            <div class="fieldDescription">Default language for Anime.Nexus downloads.</div>
-                        </div>
-
-                        <div class="inputContainer">
-                            <label class="inputLabel" for="selAnimeNexusProvider">Preferred Provider</label>
-                            <select is="emby-select" id="selAnimeNexusProvider">
-                                <option value="VOE">VOE (recommended)</option>
-                                <option value="Filemoon">Filemoon</option>
-                                <option value="Vidmoly">Vidmoly</option>
-                                <option value="Vidoza">Vidoza</option>
-                            </select>
-                            <div class="fieldDescription">Default streaming provider for Anime.Nexus.</div>
-                        </div>
-
-                        <div class="inputContainer">
-                            <label class="inputLabel" for="selAnimeNexusFallback">Fallback Provider</label>
-                            <select is="emby-select" id="selAnimeNexusFallback">
+                            <label class="inputLabel" for="selAnimeXFallback">Fallback Provider</label>
+                            <select is="emby-select" id="selAnimeXFallback">
                                 <option value="">None (no fallback)</option>
                                 <option value="VOE">VOE</option>
                                 <option value="Filemoon">Filemoon</option>

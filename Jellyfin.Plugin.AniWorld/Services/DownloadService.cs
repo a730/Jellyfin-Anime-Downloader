@@ -30,9 +30,8 @@ public class DownloadService
 
     private readonly AniWorldService _aniWorldService;
     private readonly StoService _stoService;
-    private readonly MkissaService _mkissaService;
-    private readonly MiruroService _miruroService;
-    private readonly AnimeNexusService _animeNexusService;
+    private readonly AniWatchService _aniWatchService;
+    private readonly AnimeXService _animeXService;
     private readonly DownloadHistoryService _historyService;
     private readonly IEnumerable<IStreamExtractor> _extractors;
     private readonly IMediaEncoder _mediaEncoder;
@@ -53,9 +52,8 @@ public class DownloadService
     public DownloadService(
         AniWorldService aniWorldService,
         StoService stoService,
-        MkissaService mkissaService,
-        MiruroService miruroService,
-        AnimeNexusService animeNexusService,
+        AniWatchService aniWatchService,
+        AnimeXService animeXService,
         DownloadHistoryService historyService,
         IEnumerable<IStreamExtractor> extractors,
         IMediaEncoder mediaEncoder,
@@ -64,9 +62,8 @@ public class DownloadService
     {
         _aniWorldService = aniWorldService;
         _stoService = stoService;
-        _mkissaService = mkissaService;
-        _miruroService = miruroService;
-        _animeNexusService = animeNexusService;
+        _aniWatchService = aniWatchService;
+        _animeXService = animeXService;
         _historyService = historyService;
         _extractors = extractors;
         _mediaEncoder = mediaEncoder;
@@ -133,9 +130,8 @@ public class DownloadService
         return source.ToLowerInvariant() switch
         {
             "sto" => _stoService,
-            "mkissa" => _mkissaService,
-            "miruro" => _miruroService,
-            "anime" => _animeNexusService,
+            "aniwatch" => _aniWatchService,
+            "animex" => _animeXService,
             _ => _aniWorldService,
         };
     }
@@ -743,9 +739,8 @@ public class DownloadService
             };
         }
 
-        if (string.Equals(source, "mkissa", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(source, "miruro", StringComparison.OrdinalIgnoreCase) ||
-            string.Equals(source, "anime", StringComparison.OrdinalIgnoreCase))
+        if (string.Equals(source, "aniwatch", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(source, "animex", StringComparison.OrdinalIgnoreCase))
         {
             return langKey switch
             {
@@ -1079,7 +1074,7 @@ public class DownloadTask
     /// <summary>Gets or sets the file size in bytes.</summary>
     public long FileSizeBytes { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public string Source { get; set; } = "aniworld";
 
     /// <summary>Gets or sets the username of the user who queued the download.</summary>

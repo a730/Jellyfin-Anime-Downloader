@@ -29,9 +29,8 @@ public class AniWorldController : ControllerBase
 {
     private readonly AniWorldService _aniWorldService;
     private readonly StoService _stoService;
-    private readonly MkissaService _mkissaService;
-    private readonly MiruroService _miruroService;
-    private readonly AnimeNexusService _animeNexusService;
+    private readonly AniWatchService _aniWatchService;
+    private readonly AnimeXService _animeXService;
     private readonly DownloadService _downloadService;
     private readonly DownloadHistoryService _historyService;
     private readonly IServerConfigurationManager _configManager;
@@ -43,9 +42,8 @@ public class AniWorldController : ControllerBase
     public AniWorldController(
         AniWorldService aniWorldService,
         StoService stoService,
-        MkissaService mkissaService,
-        MiruroService miruroService,
-        AnimeNexusService animeNexusService,
+        AniWatchService aniWatchService,
+        AnimeXService animeXService,
         DownloadService downloadService,
         DownloadHistoryService historyService,
         IServerConfigurationManager configManager,
@@ -53,9 +51,8 @@ public class AniWorldController : ControllerBase
     {
         _aniWorldService = aniWorldService;
         _stoService = stoService;
-        _mkissaService = mkissaService;
-        _miruroService = miruroService;
-        _animeNexusService = animeNexusService;
+        _aniWatchService = aniWatchService;
+        _animeXService = animeXService;
         _downloadService = downloadService;
         _historyService = historyService;
         _configManager = configManager;
@@ -70,9 +67,8 @@ public class AniWorldController : ControllerBase
         return source?.ToLowerInvariant() switch
         {
             "sto" => _stoService,
-            "mkissa" => _mkissaService,
-            "miruro" => _miruroService,
-            "anime" => _animeNexusService,
+            "aniwatch" => _aniWatchService,
+            "animex" => _animeXService,
             _ => _aniWorldService,
         };
     }
@@ -160,9 +156,8 @@ public class AniWorldController : ControllerBase
         {
             aniworld = config?.AniWorldConfig.Enabled ?? true,
             sto = config?.StoConfig.Enabled ?? false,
-            mkissa = config?.MkissaConfig.Enabled ?? false,
-            miruro = config?.MiruroConfig.Enabled ?? false,
-            anime = config?.AnimeNexusConfig.Enabled ?? false,
+            aniwatch = config?.AniWatchConfig.Enabled ?? false,
+            animex = config?.AnimeXConfig.Enabled ?? false,
             aniWorldOnlyGerman = config?.AniWorldConfig.OnlyGermanLanguages ?? false,
             maintenanceMode = config?.MaintenanceMode ?? false,
             maintenanceMessage = config?.MaintenanceMessage ?? string.Empty
@@ -234,7 +229,7 @@ public class AniWorldController : ControllerBase
     {
         if (!UrlValidator.IsValidUrl(url))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var resolvedSource = ResolveSource(source, url);
@@ -256,7 +251,7 @@ public class AniWorldController : ControllerBase
     {
         if (!UrlValidator.IsValidUrl(url))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var resolvedSource = ResolveSource(source, url);
@@ -278,7 +273,7 @@ public class AniWorldController : ControllerBase
     {
         if (!UrlValidator.IsValidUrl(url))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var resolvedSource = ResolveSource(source, url);
@@ -344,7 +339,7 @@ public class AniWorldController : ControllerBase
 
         if (!UrlValidator.IsValidUrl(request.EpisodeUrl))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var source = ResolveSource(request.Source, request.EpisodeUrl);
@@ -429,7 +424,7 @@ public class AniWorldController : ControllerBase
 
         if (!UrlValidator.IsValidUrl(request.SeasonUrl))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var source = ResolveSource(request.Source, request.SeasonUrl);
@@ -541,7 +536,7 @@ public class AniWorldController : ControllerBase
 
         if (!UrlValidator.IsValidUrl(request.SeriesUrl))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var source = ResolveSource(request.Source, request.SeriesUrl);
@@ -787,7 +782,7 @@ public class AniWorldController : ControllerBase
     {
         if (!UrlValidator.IsValidUrl(url))
         {
-            return BadRequest("Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.");
+            return BadRequest("Invalid URL. Only URLs from supported streaming sites are accepted.");
         }
 
         var (season, episode) = PathHelper.ParseSeasonEpisode(url);
@@ -799,7 +794,7 @@ public class AniWorldController : ControllerBase
     /// Serves a language flag SVG by language key.
     /// Accepts an optional source parameter to differentiate flag for language key "2":
     /// aniworld: japanese-english.svg, sto: english.svg.
-    /// For English-focused sources (mkissa, miruro, anime), lang "1" (English Dub) shows english.svg
+    /// For English-focused sources (aniwatch, animex), lang "1" (English Dub) shows english.svg
     /// and lang "2" (English Sub) also shows english.svg.
     /// </summary>
     [HttpGet("Flag/{lang}")]
@@ -808,9 +803,8 @@ public class AniWorldController : ControllerBase
     [AllowAnonymous]
     public ActionResult GetFlag(string lang, string? source = null)
     {
-        var isEnglishSource = string.Equals(source, "mkissa", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(source, "miruro", StringComparison.OrdinalIgnoreCase)
-            || string.Equals(source, "anime", StringComparison.OrdinalIgnoreCase);
+        var isEnglishSource = string.Equals(source, "aniwatch", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(source, "animex", StringComparison.OrdinalIgnoreCase);
 
         var isSto = string.Equals(source, "sto", StringComparison.OrdinalIgnoreCase);
 
@@ -869,7 +863,7 @@ public class AniWorldController : ControllerBase
             _ => null
         };
 
-        // Fall back to aniworld logo for unknown sources (e.g. mkissa, miruro, anime)
+        // Fall back to aniworld logo for unknown sources
         if (resourceName == null)
         {
             resourceName = "Jellyfin.Plugin.AniWorld.Web.aniworld.svg";
@@ -932,7 +926,7 @@ public class DownloadRequest
     /// <summary>Gets or sets whether to force re-download even if already downloaded.</summary>
     public bool Force { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public string? Source { get; set; }
 
     /// <summary>Gets or sets whether this is a priority download (added to front of queue).</summary>
@@ -956,7 +950,7 @@ public class BatchDownloadRequest
     /// <summary>Gets or sets the series title for file naming.</summary>
     public string? SeriesTitle { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public string? Source { get; set; }
 
     /// <summary>Gets or sets whether this is a priority download (added to front of queue).</summary>
@@ -983,7 +977,7 @@ public class FullSeriesDownloadRequest
     /// <summary>Gets or sets the series title for file naming.</summary>
     public string? SeriesTitle { get; set; }
 
-    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public string? Source { get; set; }
 
     /// <summary>Gets or sets whether this is a priority download (added to front of queue).</summary>

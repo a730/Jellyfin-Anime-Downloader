@@ -263,9 +263,8 @@ public class RebuildDownloadHistoryTask : IScheduledTask
 
         AddSiteTargets("aniworld", config.AniWorldConfig);
         AddSiteTargets("sto", config.StoConfig);
-        AddSiteTargets("mkissa", config.MkissaConfig);
-        AddSiteTargets("miruro", config.MiruroConfig);
-        AddSiteTargets("anime", config.AnimeNexusConfig);
+        AddSiteTargets("aniwatch", config.AniWatchConfig);
+        AddSiteTargets("animex", config.AnimeXConfig);
 
         // Legacy global DownloadPath
         if (!string.IsNullOrEmpty(config.DownloadPath))

@@ -23,17 +23,14 @@ public class PluginServiceRegistrator : IPluginServiceRegistrator
             .ConfigurePrimaryHttpMessageHandler(ConfigureHandler);
         serviceCollection.AddHttpClient("STO", c => c.Timeout = TimeSpan.FromSeconds(HttpClientTimeoutSeconds))
             .ConfigurePrimaryHttpMessageHandler(ConfigureHandler);
-        serviceCollection.AddHttpClient("MKISSA", c => c.Timeout = TimeSpan.FromSeconds(HttpClientTimeoutSeconds))
+        serviceCollection.AddHttpClient("ANIWATCH", c => c.Timeout = TimeSpan.FromSeconds(HttpClientTimeoutSeconds))
             .ConfigurePrimaryHttpMessageHandler(ConfigureHandler);
-        serviceCollection.AddHttpClient("MIRURO", c => c.Timeout = TimeSpan.FromSeconds(HttpClientTimeoutSeconds))
-            .ConfigurePrimaryHttpMessageHandler(ConfigureHandler);
-        serviceCollection.AddHttpClient("ANIME_NEXUS", c => c.Timeout = TimeSpan.FromSeconds(HttpClientTimeoutSeconds))
+        serviceCollection.AddHttpClient("ANIMEX", c => c.Timeout = TimeSpan.FromSeconds(HttpClientTimeoutSeconds))
             .ConfigurePrimaryHttpMessageHandler(ConfigureHandler);
         serviceCollection.AddSingleton<AniWorldService>();
         serviceCollection.AddSingleton<StoService>();
-        serviceCollection.AddSingleton<MkissaService>();
-        serviceCollection.AddSingleton<MiruroService>();
-        serviceCollection.AddSingleton<AnimeNexusService>();
+        serviceCollection.AddSingleton<AniWatchService>();
+        serviceCollection.AddSingleton<AnimeXService>();
         serviceCollection.AddSingleton<DownloadHistoryService>();
         serviceCollection.AddSingleton<DownloadService>();
         serviceCollection.AddSingleton<IStreamExtractor, VoeExtractor>();

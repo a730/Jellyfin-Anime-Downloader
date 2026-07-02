@@ -102,27 +102,18 @@ public class PluginConfiguration : BasePluginConfiguration
     };
 
     /// <summary>
-    /// Gets or sets the mkissa.to downloader configuration.
+    /// Gets or sets the aniwatch.one downloader configuration.
     /// </summary>
-    public SiteDownloaderConfig MkissaConfig { get; set; } = new()
+    public SiteDownloaderConfig AniWatchConfig { get; set; } = new()
     {
         Enabled = true,
         PreferredProvider = "VOE",
     };
 
     /// <summary>
-    /// Gets or sets the miruro.to downloader configuration.
+    /// Gets or sets the animex.one downloader configuration.
     /// </summary>
-    public SiteDownloaderConfig MiruroConfig { get; set; } = new()
-    {
-        Enabled = true,
-        PreferredProvider = "VOE",
-    };
-
-    /// <summary>
-    /// Gets or sets the anime.nexus downloader configuration.
-    /// </summary>
-    public SiteDownloaderConfig AnimeNexusConfig { get; set; } = new()
+    public SiteDownloaderConfig AnimeXConfig { get; set; } = new()
     {
         Enabled = true,
         PreferredProvider = "VOE",
@@ -220,11 +211,8 @@ public class PluginConfiguration : BasePluginConfiguration
         return source?.ToLowerInvariant() switch
         {
             "sto" => StoConfig,
-            "mkissa" => MkissaConfig,
-            "miruro" => MiruroConfig,
-            "anime" => AnimeNexusConfig,
-            "anime.nexus" => AnimeNexusConfig,
-            "anime_nexus" => AnimeNexusConfig,
+            "aniwatch" => AniWatchConfig,
+            "animex" => AnimeXConfig,
             _ => AniWorldConfig,
         };
     }

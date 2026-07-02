@@ -12,9 +12,8 @@ public static class UrlValidator
         "aniworld.to", "www.aniworld.to",
         "s.to", "www.s.to",
         "serienstream.to", "www.serienstream.to",
-        "mkissa.to", "www.mkissa.to",
-        "miruro.to", "www.miruro.to",
-        "anime.nexus", "www.anime.nexus",
+        "aniwatch.one", "www.aniwatch.one",
+        "animex.one", "www.animex.one",
     };
 
     /// <summary>
@@ -76,13 +75,13 @@ public static class UrlValidator
         if (!IsValidUrl(url))
         {
             throw new ArgumentException(
-                "Invalid URL. Only https://aniworld.to and https://s.to URLs are accepted.", paramName);
+                "Invalid URL. Only URLs from supported streaming sites are accepted.", paramName);
         }
     }
 
     /// <summary>
     /// Detects the source site from a URL.
-    /// Returns "aniworld", "sto", "mkissa", "miruro", or "anime".
+    /// Returns "aniworld", "sto", "aniwatch", or "animex".
     /// </summary>
     public static string DetectSource(string url)
     {
@@ -108,19 +107,14 @@ public static class UrlValidator
                 return "sto";
             }
 
-            if (host == "mkissa.to" || host == "www.mkissa.to")
+            if (host == "aniwatch.one" || host == "www.aniwatch.one")
             {
-                return "mkissa";
+                return "aniwatch";
             }
 
-            if (host == "miruro.to" || host == "www.miruro.to")
+            if (host == "animex.one" || host == "www.animex.one")
             {
-                return "miruro";
-            }
-
-            if (host == "anime.nexus" || host == "www.anime.nexus")
-            {
-                return "anime";
+                return "animex";
             }
         }
 
@@ -131,19 +125,14 @@ public static class UrlValidator
             return "sto";
         }
 
-        if (url.Contains("mkissa.to/", StringComparison.OrdinalIgnoreCase))
+        if (url.Contains("aniwatch.one/", StringComparison.OrdinalIgnoreCase))
         {
-            return "mkissa";
+            return "aniwatch";
         }
 
-        if (url.Contains("miruro.to/", StringComparison.OrdinalIgnoreCase))
+        if (url.Contains("animex.one/", StringComparison.OrdinalIgnoreCase))
         {
-            return "miruro";
-        }
-
-        if (url.Contains("anime.nexus/", StringComparison.OrdinalIgnoreCase))
-        {
-            return "anime";
+            return "animex";
         }
 
         return "aniworld";

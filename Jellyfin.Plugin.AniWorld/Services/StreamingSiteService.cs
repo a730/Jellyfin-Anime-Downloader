@@ -70,7 +70,7 @@ public abstract class StreamingSiteService
 
     // ── Abstract site-specific members ──────────────────────────
 
-    /// <summary>Gets the source identifier ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets the source identifier ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public abstract string SourceName { get; }
 
     /// <summary>Gets the base URL (e.g. "https://aniworld.to").</summary>
@@ -411,191 +411,6 @@ public abstract class StreamingSiteService
     }
 }
 
-// ── Site-specific service implementations ─────────────────────
-
-/// <summary>
-/// Service for interacting with the mkissa.to website.
-/// Mkissa.to is an anime streaming site with English and German language options.
-/// </summary>
-public class MkissaService : StreamingSiteService
-{
-    private static readonly Regex MkissaSeasonLinkPattern = new(
-        @"<a[^>]*href=""(/anime/stream/[^""]+/staffel-\d+)""[^>]*>",
-        RegexOptions.Compiled);
-
-    private static readonly Regex MkissaEpisodeListPattern = new(
-        @"<a[^>]*href=""(/anime/stream/[^""]+/staffel-\d+/episode-\d+)""[^>]*>",
-        RegexOptions.Compiled);
-
-    private static readonly Regex MkissaSearchFilterPattern = new(
-        @"^/anime/stream/[a-zA-Z0-9\-]+/?$",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    private static readonly Regex MkissaBrowseItemPattern = new(
-        @"<a\s+href=""(?<url>/anime/stream/[^""]+)""[^>]*>.*?data-src=""(?<cover>[^""]+)"".*?<h3>(?<name>.+?)\s*(?:<span[^>]*>\s*</span>)?\s*</h3>\s*(?:<small>(?<genre>[^<]*)</small>)?",
-        RegexOptions.Singleline | RegexOptions.Compiled);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MkissaService"/> class.
-    /// </summary>
-    public MkissaService(IHttpClientFactory httpClientFactory, ILogger<MkissaService> logger)
-        : base(httpClientFactory.CreateClient("MKISSA"), logger)
-    {
-    }
-
-    /// <inheritdoc />
-    public override string SourceName => "mkissa";
-
-    /// <inheritdoc />
-    protected override string BaseUrl => "https://mkissa.to";
-
-    /// <inheritdoc />
-    protected override string SearchUrl => "https://mkissa.to/ajax/search";
-
-    /// <inheritdoc />
-    protected override string SeriesPathPrefix => "/anime/stream/";
-
-    /// <inheritdoc />
-    protected override string PopularPath => "/beliebte-animes";
-
-    /// <inheritdoc />
-    protected override string NewSectionHeading => "Neue Animes";
-
-    /// <inheritdoc />
-    protected override Regex SeasonLinkPattern => MkissaSeasonLinkPattern;
-
-    /// <inheritdoc />
-    protected override Regex EpisodeListPattern => MkissaEpisodeListPattern;
-
-    /// <inheritdoc />
-    protected override Regex SearchFilterPattern => MkissaSearchFilterPattern;
-
-    /// <inheritdoc />
-    protected override Regex BrowseItemPattern => MkissaBrowseItemPattern;
-}
-
-/// <summary>
-/// Service for interacting with the miruro.to website.
-/// Miruro.to is an anime streaming site focused on English subs and dubs.
-/// </summary>
-public class MiruroService : StreamingSiteService
-{
-    private static readonly Regex MiruroSeasonLinkPattern = new(
-        @"href=""(/watch/[^""]+/season-\d+)""",
-        RegexOptions.Compiled);
-
-    private static readonly Regex MiruroEpisodeListPattern = new(
-        @"href=""(/watch/[^""]+/episode-\d+)""",
-        RegexOptions.Compiled);
-
-    private static readonly Regex MiruroSearchFilterPattern = new(
-        @"^/watch/[a-zA-Z0-9\-]+/?$",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    private static readonly Regex MiruroBrowseItemPattern = new(
-        @"<a\s+href=""(?<url>/watch/[^""]+)""[^>]*>.*?data-src=""(?<cover>[^""]+)"".*?<h3>(?<name>.+?)</h3>",
-        RegexOptions.Singleline | RegexOptions.Compiled);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MiruroService"/> class.
-    /// </summary>
-    public MiruroService(IHttpClientFactory httpClientFactory, ILogger<MiruroService> logger)
-        : base(httpClientFactory.CreateClient("MIRURO"), logger)
-    {
-    }
-
-    /// <inheritdoc />
-    public override string SourceName => "miruro";
-
-    /// <inheritdoc />
-    protected override string BaseUrl => "https://miruro.to";
-
-    /// <inheritdoc />
-    protected override string SearchUrl => "https://miruro.to/api/search?query={0}";
-
-    /// <inheritdoc />
-    protected override string SeriesPathPrefix => "/watch/";
-
-    /// <inheritdoc />
-    protected override string PopularPath => "/popular";
-
-    /// <inheritdoc />
-    protected override string NewSectionHeading => "Latest Episodes";
-
-    /// <inheritdoc />
-    protected override Regex SeasonLinkPattern => MiruroSeasonLinkPattern;
-
-    /// <inheritdoc />
-    protected override Regex EpisodeListPattern => MiruroEpisodeListPattern;
-
-    /// <inheritdoc />
-    protected override Regex SearchFilterPattern => MiruroSearchFilterPattern;
-
-    /// <inheritdoc />
-    protected override Regex BrowseItemPattern => MiruroBrowseItemPattern;
-}
-
-/// <summary>
-/// Service for interacting with the anime.nexus website.
-/// Anime.nexus is an anime streaming site supporting multiple languages.
-/// </summary>
-public class AnimeNexusService : StreamingSiteService
-{
-    private static readonly Regex AnimeNexusSeasonLinkPattern = new(
-        @"href=""(/anime/[^""]+/season-\d+)""",
-        RegexOptions.Compiled);
-
-    private static readonly Regex AnimeNexusEpisodeListPattern = new(
-        @"href=""(/anime/[^""]+/episode-\d+)""",
-        RegexOptions.Compiled);
-
-    private static readonly Regex AnimeNexusSearchFilterPattern = new(
-        @"^/anime/[a-zA-Z0-9\-]+/?$",
-        RegexOptions.IgnoreCase | RegexOptions.Compiled);
-
-    private static readonly Regex AnimeNexusBrowseItemPattern = new(
-        @"<a\s+href=""(?<url>/anime/[^""]+)""[^>]*>.*?data-src=""(?<cover>[^""]+)"".*?<h3>(?<name>.+?)</h3>",
-        RegexOptions.Singleline | RegexOptions.Compiled);
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AnimeNexusService"/> class.
-    /// </summary>
-    public AnimeNexusService(IHttpClientFactory httpClientFactory, ILogger<AnimeNexusService> logger)
-        : base(httpClientFactory.CreateClient("ANIME_NEXUS"), logger)
-    {
-    }
-
-    /// <inheritdoc />
-    public override string SourceName => "anime";
-
-    /// <inheritdoc />
-    protected override string BaseUrl => "https://anime.nexus";
-
-    /// <inheritdoc />
-    protected override string SearchUrl => "https://anime.nexus/api/search?q={0}";
-
-    /// <inheritdoc />
-    protected override string SeriesPathPrefix => "/anime/";
-
-    /// <inheritdoc />
-    protected override string PopularPath => "/top/anime";
-
-    /// <inheritdoc />
-    protected override string NewSectionHeading => "Latest Episodes";
-
-    /// <inheritdoc />
-    protected override Regex SeasonLinkPattern => AnimeNexusSeasonLinkPattern;
-
-    /// <inheritdoc />
-    protected override Regex EpisodeListPattern => AnimeNexusEpisodeListPattern;
-
-    /// <inheritdoc />
-    protected override Regex SearchFilterPattern => AnimeNexusSearchFilterPattern;
-
-    /// <inheritdoc />
-    protected override Regex BrowseItemPattern => AnimeNexusBrowseItemPattern;
-}
-
 // ── DTO classes ─────────────────────────────────────────────────
 
 /// <summary>
@@ -627,7 +442,7 @@ public class SearchResult
     /// <summary>Gets or sets the description.</summary>
     public string Description { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public string Source { get; set; } = "aniworld";
 }
 
@@ -702,7 +517,7 @@ public class BrowseItem
     /// <summary>Gets or sets the genre label.</summary>
     public string Genre { get; set; } = string.Empty;
 
-    /// <summary>Gets or sets the source site ("aniworld", "sto", "mkissa", "miruro", or "anime").</summary>
+    /// <summary>Gets or sets the source site ("aniworld", "sto", "aniwatch", or "animex").</summary>
     public string Source { get; set; } = "aniworld";
 }
 
