@@ -25,7 +25,7 @@ public class AniWatchService : StreamingSiteService
         RegexOptions.Compiled);
 
     private static readonly Regex AwDescriptionPattern = new(
-        @"<div[^>]*class=""description""[^>]*>(?<desc>.*?)</div>",
+        @"<div[^>]*class=""film-description[^""]*""[^>]*>(?<desc>.*?)</div>",
         RegexOptions.Singleline | RegexOptions.Compiled);
 
     private static readonly Regex AwGenrePattern = new(
@@ -154,26 +154,18 @@ public class AniWatchService : StreamingSiteService
 
         var coverUrl = string.Empty;
         var posterMatch = Regex.Match(html,
-            @"<img[^>]*class=""film-poster-img""[^>]*(?:data-src|src)=""(?<src>(?:https?://)?[^""]+)""");
+            @"<img[^>]*class=""film-poster-img""[^>]*(?:data-src|src)=""(?<src>[^""]+)""");
+        if (!posterMatch.Success)
+        {
+            posterMatch = Regex.Match(html,
+                @"<img[^>]*(?:data-src|src)=""(?<src>[^""]+)""[^>]*class=""film-poster-img""");
+        }
         if (posterMatch.Success)
         {
             coverUrl = posterMatch.Groups["src"].Value;
             if (!coverUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
             {
                 coverUrl = $"{BaseUrl}{coverUrl}";
-            }
-        }
-        else
-        {
-            var imgMatch = Regex.Match(html,
-                @"<img[^>]*class=""(?:[^""]*\s)?(?:anime-poster|cover)[^""]*""[^>]*(?:data-src|src)=""(?<src>[^""]+)""");
-            if (imgMatch.Success)
-            {
-                coverUrl = imgMatch.Groups["src"].Value;
-                if (!coverUrl.StartsWith("http", StringComparison.OrdinalIgnoreCase))
-                {
-                    coverUrl = $"{BaseUrl}{coverUrl}";
-                }
             }
         }
 
@@ -187,18 +179,29 @@ public class AniWatchService : StreamingSiteService
         }
 
         var genres = new List<string>();
-        var genreMatches = Regex.Matches(html,
-            @"<a[^>]*href=""/genre/[^""]+""[^>]*>(?<genre>[^<]+)</a>");
-        foreach (Match g in genreMatches)
-        {
-            var genre = DecodeHtml(g.Groups["genre"].Value.Trim());
-            if (!string.IsNullOrEmpty(genre))
-            {
-                genres.Add(genre);
-            }
-        }
 
-        genres = genres.Distinct().ToList();
+        var ldJsonMatches = Regex.Matches(html,
+            @"<script[^>]*type=""application/ld\+json""[^>]*>(?<json>.*?)</script>",
+            RegexOptions.Singleline);
+        foreach (Match ldMatch in ldJsonMatches)
+        {
+            try
+            {
+                using var ldDoc = JsonDocument.Parse(ldMatch.Groups["json"].Value);
+                if (ldDoc.RootElement.TryGetProperty("genre", out var genreProp) && genreProp.ValueKind == JsonValueKind.Array)
+                {
+                    foreach (var g in genreProp.EnumerateArray())
+                    {
+                        var genre = g.GetString();
+                        if (!string.IsNullOrEmpty(genre))
+                            genres.Add(genre);
+                    }
+                    if (genres.Count > 0)
+                        break;
+                }
+            }
+            catch (JsonException) { }
+        }
 
         return new SeriesInfo
         {
@@ -221,8 +224,15 @@ public class AniWatchService : StreamingSiteService
         var episodeUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         var epItems = Regex.Matches(html,
-            @"<a[^>]*href=""(?<url>/watch/[^""]+)""[^>]*class=""[^""]*ss-ep-btn[^""]*""[^>]*>(?:\s*Ep\s*)?(?<num>\d+)",
+            @"<a[^>]*href=""(?<url>/watch/[^""]+/episode/(?<num>\d+))""",
             RegexOptions.Singleline);
+
+        if (epItems.Count == 0)
+        {
+            epItems = Regex.Matches(html,
+                @"<a[^>]*href=""(?<url>/watch/[^""]+)""[^>]*class=""[^""]*ss-ep-btn[^""]*""[^>]*>(?:\s*Ep\s*)?(?<num>\d+)",
+                RegexOptions.Singleline);
+        }
 
         if (epItems.Count == 0)
         {
@@ -299,6 +309,37 @@ public class AniWatchService : StreamingSiteService
                 : $"{BaseUrl}{redirect}";
 
             providers[langKey][provider] = redirectUrl;
+        }
+
+        if (providers.Count == 0)
+        {
+            var serverItemPattern = new Regex(
+                @"<div[^>]*class=""item server-item""[^>]*data-type=""(?<type>[^""]+)""[^>]*data-url=""(?<url>[^""]+)""",
+                RegexOptions.Singleline);
+
+            foreach (Match match in serverItemPattern.Matches(html))
+            {
+                var type = match.Groups["type"].Value;
+                var url = match.Groups["url"].Value;
+
+                var langKey = type switch
+                {
+                    "sub" => "2",
+                    "dub" => "1",
+                    _ => "2",
+                };
+
+                var providerName = url.Contains("megacloud", StringComparison.OrdinalIgnoreCase) ? "VOE" :
+                    url.Contains("weneverbeenfree", StringComparison.OrdinalIgnoreCase) ? "Vidmoly" :
+                    url.Contains("playmogo", StringComparison.OrdinalIgnoreCase) ? "Filemoon" :
+                    "Unknown";
+
+                if (!providers.ContainsKey(langKey))
+                    providers[langKey] = new Dictionary<string, string>();
+
+                if (!providers[langKey].ContainsKey(providerName))
+                    providers[langKey][providerName] = url;
+            }
         }
 
         if (providers.Count == 0)

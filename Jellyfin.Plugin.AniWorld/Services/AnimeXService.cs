@@ -14,9 +14,10 @@ namespace Jellyfin.Plugin.AniWorld.Services;
 public class AnimeXService : StreamingSiteService
 {
     private const string GraphQlApi = "https://graphql.animex.one";
-    private const string FastSearchQuery = @"
-        query FastSearch($query: String, $limit: Int, $includeAdult: Boolean) {
-            catalogAnime(filter: { query: $query, includeAdult: $includeAdult }, limit: $limit) {
+
+    private const string SearchQuery = @"
+        query SearchAnime($q: String!, $limit: Int) {
+            catalogAnime(filter: { query: $q, includeAdult: false }, limit: $limit) {
                 items {
                     id
                     anilistId
@@ -74,33 +75,36 @@ public class AnimeXService : StreamingSiteService
             }
         }";
 
-    private static readonly Regex AxTitlePattern = new(
-        @"<h1[^>]*>(?<title>[^<]+)</h1>",
-        RegexOptions.Compiled);
-
-    private static readonly Regex AxDescriptionPattern = new(
-        @"<p[^>]*class=""description""[^>]*>(?<desc>.*?)</p>",
-        RegexOptions.Singleline | RegexOptions.Compiled);
-
-    private static readonly Regex AxCoverPattern = new(
-        @"<img[^>]*class=""cover""[^>]*src=""(?<src>[^""]+)""",
-        RegexOptions.Compiled);
-
-    private static readonly Regex AxCoverAltPattern = new(
-        @"<meta[^>]*property=""og:image""[^>]*content=""(?<src>[^""]+)""",
-        RegexOptions.Compiled);
-
-    private static readonly Regex AxJsonLd = new(
-        @"<script[^>]*type=""application/ld\+json""[^>]*>(?<json>.*?)</script>",
-        RegexOptions.Singleline | RegexOptions.Compiled);
-
-    private static readonly Regex AxEpisodeItem = new(
-        @"<a[^>]*href=""(?<url>/anime/[^""]+/(?:episode|watch|ep)/(?<num>\d+))""[^>]*>(?:\s*Ep\s*#?\s*)?(?<num2>\d+)",
-        RegexOptions.Singleline | RegexOptions.Compiled);
-
-    private static readonly Regex AxEpisodeFromScript = new(
-        @"episodes\s*:\s*\[(?<eps>.*?)\]",
-        RegexOptions.Singleline | RegexOptions.Compiled);
+    private const string AnimeQuery = @"
+        query GetAnime($anilistId: Int!) {
+            anime(anilistId: $anilistId) {
+                id
+                anilistId
+                malId
+                titleRomaji
+                titleEnglish
+                coverImage
+                bannerImage
+                description
+                status
+                format
+                type
+                episodeCount
+                duration
+                seasonYear
+                season
+                averageScore
+                genres
+                source
+                countryOfOrigin
+                startDateYear
+                startDateMonth
+                startDateDay
+                endDateYear
+                endDateMonth
+                endDateDay
+            }
+        }";
 
     public AnimeXService(IHttpClientFactory httpClientFactory, ILogger<AnimeXService> logger)
         : base(httpClientFactory.CreateClient("ANIMEX"), logger)
@@ -129,32 +133,64 @@ public class AnimeXService : StreamingSiteService
 
     protected override Regex BrowseItemPattern => new(@"", RegexOptions.Compiled);
 
+    private static string ExtractSlugFromId(string id)
+    {
+        if (string.IsNullOrEmpty(id))
+            return string.Empty;
+        var lastDash = id.LastIndexOf('-');
+        if (lastDash > 0 && id.Length - lastDash == 6)
+            return id[..lastDash];
+        return id;
+    }
+
+    private static int ExtractAnilistIdFromUrl(string url)
+    {
+        var match = Regex.Match(url, @"-(\d+)(?:/|$|-)");
+        if (match.Success && int.TryParse(match.Groups[1].Value, out var id))
+            return id;
+        return 0;
+    }
+
+    private static string BuildAnimeUrl(string id, int anilistId)
+    {
+        var slug = ExtractSlugFromId(id);
+        return $"{slug}-{anilistId}";
+    }
+
+    private async Task<JsonElement?> ExecuteGraphQlQueryAsync(string query, object variables, CancellationToken cancellationToken)
+    {
+        var payload = new { query, variables };
+        var json = JsonSerializer.Serialize(payload);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+        var response = await HttpClient.PostAsync($"{GraphQlApi}/graphql", content, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+        var responseJson = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        using var doc = JsonDocument.Parse(responseJson);
+
+        if (doc.RootElement.TryGetProperty("errors", out _))
+            return null;
+
+        return doc.RootElement.GetProperty("data").Clone();
+    }
+
     public override async Task<List<SearchResult>> SearchAsync(string keyword, CancellationToken cancellationToken = default)
     {
         Logger.LogDebug("AnimeX GraphQL search: {Keyword}", keyword);
 
-        var payload = new
-        {
-            query = FastSearchQuery,
-            variables = new { query = keyword, limit = 20, includeAdult = false }
-        };
-
-        var json = JsonSerializer.Serialize(payload);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-
         try
         {
-            var response = await HttpClient.PostAsync($"{GraphQlApi}/graphql", content, cancellationToken).ConfigureAwait(false);
-            response.EnsureSuccessStatusCode();
-            var responseJson = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            using var doc = JsonDocument.Parse(responseJson);
+            var data = await ExecuteGraphQlQueryAsync(SearchQuery, new { q = keyword, limit = 20 }, cancellationToken).ConfigureAwait(false);
+            if (data == null)
+                return new List<SearchResult>();
 
-            var items = doc.RootElement.GetProperty("data").GetProperty("catalogAnime").GetProperty("items");
+            var items = data.Value.GetProperty("catalogAnime").GetProperty("items");
 
             var results = new List<SearchResult>();
             foreach (var item in items.EnumerateArray())
             {
                 var id = item.GetProperty("id").GetString() ?? string.Empty;
+                var anilistId = item.GetProperty("anilistId").GetInt32();
                 var titleRomaji = item.GetProperty("titleRomaji").GetString() ?? string.Empty;
                 var titleEnglish = item.TryGetProperty("titleEnglish", out var te) ? te.GetString() ?? string.Empty : string.Empty;
                 var title = string.IsNullOrEmpty(titleEnglish) ? titleRomaji : titleEnglish;
@@ -168,10 +204,12 @@ public class AnimeXService : StreamingSiteService
                         coverUrl = lg.GetString() ?? string.Empty;
                 }
 
+                var urlPath = BuildAnimeUrl(id, anilistId);
+
                 results.Add(new SearchResult
                 {
                     Title = title,
-                    Url = $"{BaseUrl}/anime/{id}",
+                    Url = $"{BaseUrl}/anime/{urlPath}",
                     Description = string.Empty,
                     Source = SourceName,
                 });
@@ -189,215 +227,161 @@ public class AnimeXService : StreamingSiteService
 
     public override async Task<SeriesInfo> GetSeriesInfoAsync(string seriesUrl, CancellationToken cancellationToken = default)
     {
-        var html = await FetchPageAsync(seriesUrl, cancellationToken).ConfigureAwait(false);
-
-        var title = "Unknown";
-        var titleMatch = AxTitlePattern.Match(html);
-        if (titleMatch.Success)
+        var anilistId = ExtractAnilistIdFromUrl(seriesUrl);
+        if (anilistId == 0)
         {
-            title = DecodeHtml(titleMatch.Groups["title"].Value.Trim());
+            Logger.LogWarning("Could not extract anilistId from URL: {Url}", seriesUrl);
+            return new SeriesInfo { Title = "Unknown", Url = seriesUrl };
         }
 
-        var coverUrl = string.Empty;
-        var coverMatch = AxCoverPattern.Match(html);
-        if (coverMatch.Success)
+        Logger.LogDebug("AnimeX fetching series info for anilistId: {Id}", anilistId);
+
+        try
         {
-            coverUrl = NormalizeImageUrl(coverMatch.Groups["src"].Value);
-        }
-        else
-        {
-            var coverAltMatch = AxCoverAltPattern.Match(html);
-            if (coverAltMatch.Success)
+            var data = await ExecuteGraphQlQueryAsync(AnimeQuery, new { anilistId }, cancellationToken).ConfigureAwait(false);
+            if (data == null)
+                return new SeriesInfo { Title = "Unknown", Url = seriesUrl };
+
+            var anime = data.Value.GetProperty("anime");
+
+            var titleRomaji = anime.GetProperty("titleRomaji").GetString() ?? string.Empty;
+            var titleEnglish = anime.TryGetProperty("titleEnglish", out var te) ? te.GetString() ?? string.Empty : string.Empty;
+            var title = string.IsNullOrEmpty(titleEnglish) ? titleRomaji : titleEnglish;
+
+            string coverUrl = string.Empty;
+            if (anime.TryGetProperty("coverImage", out var cover) && cover.ValueKind == JsonValueKind.Object)
             {
-                coverUrl = NormalizeImageUrl(coverAltMatch.Groups["src"].Value);
+                if (cover.TryGetProperty("extraLarge", out var xl))
+                    coverUrl = xl.GetString() ?? string.Empty;
+                else if (cover.TryGetProperty("large", out var lg))
+                    coverUrl = lg.GetString() ?? string.Empty;
             }
-        }
 
-        var jsonLdMatch = AxJsonLd.Match(html);
-        if (jsonLdMatch.Success && string.IsNullOrEmpty(coverUrl))
-        {
-            try
+            var description = anime.TryGetProperty("description", out var desc) ? desc.GetString() ?? string.Empty : string.Empty;
+            var cleanDescription = Regex.Replace(description, "<[^>]+>", string.Empty).Trim();
+
+            var genres = new List<string>();
+            if (anime.TryGetProperty("genres", out var genreProp) && genreProp.ValueKind == JsonValueKind.Array)
             {
-                using var doc = JsonDocument.Parse(jsonLdMatch.Groups["json"].Value);
-                if (doc.RootElement.TryGetProperty("image", out var imgProp))
+                foreach (var g in genreProp.EnumerateArray())
                 {
-                    coverUrl = imgProp.GetString() ?? string.Empty;
-                }
-
-                if (string.IsNullOrEmpty(title) || title == "Unknown")
-                {
-                    if (doc.RootElement.TryGetProperty("name", out var nameProp))
-                    {
-                        title = nameProp.GetString() ?? "Unknown";
-                    }
+                    var genreName = g.TryGetProperty("name", out var gn) ? gn.GetString() : g.GetString();
+                    if (!string.IsNullOrEmpty(genreName))
+                        genres.Add(genreName);
                 }
             }
-            catch (JsonException ex)
+
+            return new SeriesInfo
             {
-                Logger.LogDebug(ex, "Failed to parse JSON-LD from AnimeX page");
-            }
+                Title = DecodeHtml(title),
+                Url = seriesUrl,
+                CoverImageUrl = coverUrl,
+                Description = DecodeHtml(cleanDescription),
+                Genres = genres,
+                Seasons = new List<SeasonRef>(),
+                HasMovies = false,
+            };
         }
-
-        var description = string.Empty;
-        var descMatch = AxDescriptionPattern.Match(html);
-        if (descMatch.Success)
+        catch (Exception ex)
         {
-            description = DecodeHtml(Regex.Replace(descMatch.Groups["desc"].Value, "<[^>]+>", string.Empty).Trim());
+            Logger.LogError(ex, "AnimeX GraphQL series info failed for anilistId: {Id}", anilistId);
+            return new SeriesInfo { Title = "Unknown", Url = seriesUrl };
         }
-
-        if (string.IsNullOrEmpty(description))
-        {
-            var metaDescMatch = Regex.Match(html,
-                @"<meta[^>]*name=""description""[^>]*content=""(?<desc>[^""]+)""");
-            if (metaDescMatch.Success)
-            {
-                description = DecodeHtml(metaDescMatch.Groups["desc"].Value.Trim());
-            }
-        }
-
-        var genres = new List<string>();
-        foreach (Match g in Regex.Matches(html,
-            @"<a[^>]*href=""/anime[^""]*\?genres?=[^""]+""[^>]*>(?<genre>[^<]+)</a>"))
-        {
-            var genre = DecodeHtml(g.Groups["genre"].Value.Trim());
-            if (!string.IsNullOrEmpty(genre))
-                genres.Add(genre);
-        }
-
-        return new SeriesInfo
-        {
-            Title = title,
-            Url = seriesUrl,
-            CoverImageUrl = coverUrl,
-            Description = description,
-            Genres = genres.Distinct().ToList(),
-            Seasons = new List<SeasonRef>(),
-            HasMovies = false,
-        };
     }
 
     public override async Task<List<EpisodeRef>> GetEpisodesAsync(string seasonUrl, CancellationToken cancellationToken = default)
     {
-        var html = await FetchPageAsync(seasonUrl, cancellationToken).ConfigureAwait(false);
-
-        var episodes = new List<EpisodeRef>();
-        var episodeUrls = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (Match match in AxEpisodeItem.Matches(html))
+        var anilistId = ExtractAnilistIdFromUrl(seasonUrl);
+        if (anilistId == 0)
         {
-            var url = match.Groups["url"].Value;
-            if (!episodeUrls.Add(url))
-                continue;
-
-            var numStr = match.Groups["num"].Value;
-            if (!int.TryParse(numStr, out var num))
-            {
-                if (!int.TryParse(match.Groups["num2"].Value, out num))
-                    continue;
-            }
-
-            episodes.Add(new EpisodeRef
-            {
-                Url = url.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? url : $"{BaseUrl}{url}",
-                Number = num,
-                IsMovie = false,
-            });
+            Logger.LogWarning("Could not extract anilistId from season URL: {Url}", seasonUrl);
+            return new List<EpisodeRef>();
         }
 
-        if (episodes.Count == 0)
-        {
-            var scriptEps = AxEpisodeFromScript.Match(html);
-            if (scriptEps.Success)
-            {
-                var epJson = $"[{scriptEps.Groups["eps"].Value}]";
-                try
-                {
-                    using var doc = JsonDocument.Parse(epJson);
-                    foreach (var el in doc.RootElement.EnumerateArray())
-                    {
-                        if (el.TryGetProperty("episode", out var epProp) && epProp.TryGetInt32(out var num))
-                        {
-                            episodes.Add(new EpisodeRef
-                            {
-                                Url = $"{seasonUrl}/episode/{num}",
-                                Number = num,
-                                IsMovie = false,
-                            });
-                        }
-                    }
-                }
-                catch (JsonException ex)
-                {
-                    Logger.LogDebug(ex, "Failed to parse inline episode JSON from AnimeX");
-                }
-            }
-        }
+        Logger.LogDebug("AnimeX fetching episodes for anilistId: {Id}", anilistId);
 
-        return episodes.OrderBy(e => e.Number).ToList();
+        try
+        {
+            var data = await ExecuteGraphQlQueryAsync(AnimeQuery, new { anilistId }, cancellationToken).ConfigureAwait(false);
+            if (data == null)
+                return new List<EpisodeRef>();
+
+            var anime = data.Value.GetProperty("anime");
+            var episodeCount = anime.TryGetProperty("episodeCount", out var ec) ? ec.GetInt32() : 0;
+
+            if (episodeCount <= 0)
+                return new List<EpisodeRef>();
+
+            var episodes = new List<EpisodeRef>();
+            for (int i = 1; i <= episodeCount; i++)
+            {
+                episodes.Add(new EpisodeRef
+                {
+                    Url = $"{BaseUrl}/watch/{anilistId}?ep={i}",
+                    Number = i,
+                    IsMovie = false,
+                });
+            }
+
+            return episodes;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "AnimeX GraphQL episodes failed for anilistId: {Id}", anilistId);
+            return new List<EpisodeRef>();
+        }
     }
 
     public override async Task<EpisodeDetails> GetEpisodeDetailsAsync(string episodeUrl, CancellationToken cancellationToken = default)
     {
-        var html = await FetchPageAsync(episodeUrl, cancellationToken).ConfigureAwait(false);
-
-        var titleEn = string.Empty;
-        var h1Match = Regex.Match(html, @"<h1[^>]*>(?<title>[^<]+)</h1>");
-        if (h1Match.Success)
-        {
-            titleEn = DecodeHtml(h1Match.Groups["title"].Value.Trim());
-        }
-
         var providers = new Dictionary<string, Dictionary<string, string>>();
+        var titleEn = string.Empty;
 
-        var serverPattern = new Regex(
-            @"(?:data-server|data-provider|data-source)""?\s*[:=]\s*""?(?<server>[^""'/>]+)""?\s*[},]",
-            RegexOptions.Singleline | RegexOptions.Compiled);
-
-        foreach (Match match in serverPattern.Matches(html))
+        try
         {
-            var langKey = "2";
-            var server = match.Groups["server"].Value.Trim();
-
-            if (!providers.ContainsKey(langKey))
-                providers[langKey] = new Dictionary<string, string>();
-
-            var providerName = server switch
+            var html = await FetchPageAsync(episodeUrl, cancellationToken).ConfigureAwait(false);
+            var ldMatch = Regex.Match(html,
+                @"<script[^>]*type=""application/ld\+json""[^>]*>(?<json>.*?)</script>",
+                RegexOptions.Singleline);
+            if (ldMatch.Success)
             {
-                "voe" => "VOE",
-                "vidmoly" => "Vidmoly",
-                "filemoon" => "Filemoon",
-                "vidoza" => "Vidoza",
-                _ => server,
-            };
+                try
+                {
+                    using var ldDoc = JsonDocument.Parse(ldMatch.Groups["json"].Value);
+                    if (ldDoc.RootElement.TryGetProperty("name", out var nameProp))
+                        titleEn = nameProp.GetString() ?? string.Empty;
+                }
+                catch (JsonException) { }
+            }
 
-            if (!providers[langKey].ContainsKey(providerName))
-                providers[langKey][providerName] = episodeUrl;
-        }
+            var serverPattern = new Regex(
+                @"(?:data-server|data-provider|data-source)""?\s*[:=]\s*""?(?<server>[^""'/>]+)""?\s*[},]",
+                RegexOptions.Singleline);
 
-        if (providers.Count == 0)
-        {
-            var anchorPattern = new Regex(
-                @"<a[^>]*href=""(?<url>[^""]*)(?:voe|vidmoly|filemoon|vidoza)[^""]*""[^>]*>(?<name>[^<]*)</a>",
-                RegexOptions.Singleline | RegexOptions.Compiled);
-
-            foreach (Match match in anchorPattern.Matches(html))
+            foreach (Match match in serverPattern.Matches(html))
             {
                 var langKey = "2";
-                var providerName = DecodeHtml(match.Groups["name"].Value.Trim());
-                if (string.IsNullOrEmpty(providerName))
-                {
-                    providerName = match.Groups["url"].Value.Contains("voe", StringComparison.OrdinalIgnoreCase) ? "VOE" :
-                        match.Groups["url"].Value.Contains("vidmoly", StringComparison.OrdinalIgnoreCase) ? "Vidmoly" :
-                        match.Groups["url"].Value.Contains("filemoon", StringComparison.OrdinalIgnoreCase) ? "Filemoon" :
-                        match.Groups["url"].Value.Contains("vidoza", StringComparison.OrdinalIgnoreCase) ? "Vidoza" :
-                        "Unknown";
-                }
+                var server = match.Groups["server"].Value.Trim();
 
                 if (!providers.ContainsKey(langKey))
                     providers[langKey] = new Dictionary<string, string>();
 
-                providers[langKey][providerName] = match.Groups["url"].Value;
+                var providerName = server switch
+                {
+                    "voe" => "VOE",
+                    "vidmoly" => "Vidmoly",
+                    "filemoon" => "Filemoon",
+                    "vidoza" => "Vidoza",
+                    _ => server,
+                };
+
+                if (!providers[langKey].ContainsKey(providerName))
+                    providers[langKey][providerName] = episodeUrl;
             }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogDebug(ex, "AnimeX episode details scrape failed for: {Url}", episodeUrl);
         }
 
         return new EpisodeDetails
@@ -459,6 +443,7 @@ public class AnimeXService : StreamingSiteService
                 foreach (var item in results.EnumerateArray())
                 {
                     var id = item.GetProperty("id").GetString() ?? string.Empty;
+                    var anilistId = item.GetProperty("anilistId").GetInt32();
                     var titleRomaji = item.GetProperty("titleRomaji").GetString() ?? string.Empty;
                     var titleEnglish = item.TryGetProperty("titleEnglish", out var te) ? te.GetString() ?? string.Empty : string.Empty;
                     var title = string.IsNullOrEmpty(titleEnglish) ? titleRomaji : titleEnglish;
@@ -472,10 +457,12 @@ public class AnimeXService : StreamingSiteService
                             coverUrl = lg.GetString() ?? string.Empty;
                     }
 
+                    var urlPath = BuildAnimeUrl(id, anilistId);
+
                     items.Add(new BrowseItem
                     {
                         Title = title,
-                        Url = $"{BaseUrl}/anime/{id}",
+                        Url = $"{BaseUrl}/anime/{urlPath}",
                         CoverImageUrl = coverUrl,
                         Genre = string.Empty,
                         Source = SourceName,
@@ -501,6 +488,7 @@ public class AnimeXService : StreamingSiteService
         foreach (var item in root.EnumerateArray())
         {
             var id = item.GetProperty("id").GetString() ?? string.Empty;
+            var anilistId = item.GetProperty("anilistId").GetInt32();
             var titleRomaji = item.GetProperty("titleRomaji").GetString() ?? string.Empty;
             var titleEnglish = item.TryGetProperty("titleEnglish", out var te) ? te.GetString() ?? string.Empty : string.Empty;
             var title = string.IsNullOrEmpty(titleEnglish) ? titleRomaji : titleEnglish;
@@ -514,10 +502,12 @@ public class AnimeXService : StreamingSiteService
                     coverUrl = lg.GetString() ?? string.Empty;
             }
 
+            var urlPath = BuildAnimeUrl(id, anilistId);
+
             items.Add(new BrowseItem
             {
                 Title = title,
-                Url = $"{BaseUrl}/anime/{id}",
+                Url = $"{BaseUrl}/anime/{urlPath}",
                 CoverImageUrl = coverUrl,
                 Genre = string.Empty,
                 Source = SourceName,
@@ -525,20 +515,5 @@ public class AnimeXService : StreamingSiteService
         }
 
         return items;
-    }
-
-    private string NormalizeImageUrl(string url)
-    {
-        if (string.IsNullOrEmpty(url))
-            return string.Empty;
-
-        if (url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-            url.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            return url;
-
-        if (url.StartsWith("//", StringComparison.OrdinalIgnoreCase))
-            return $"https:{url}";
-
-        return $"{BaseUrl}{url}";
     }
 }
