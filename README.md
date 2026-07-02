@@ -1,7 +1,7 @@
 # Jellyfin AniWorld Multi-Site Downloader
 
-![GitHub Release](https://img.shields.io/github/v/release/SiroxCW/Jellyfin-AniWorld-Downloader)
-![GitHub License](https://img.shields.io/github/license/SiroxCW/Jellyfin-AniWorld-Downloader)
+![GitHub Release](https://img.shields.io/github/v/release/a730/Jellyfin-Anime-Downloader)
+![GitHub License](https://img.shields.io/github/license/a730/Jellyfin-Anime-Downloader)
 
 A Jellyfin plugin for searching and downloading anime and series from [aniworld.to](https://aniworld.to), [s.to](https://s.to), [mkissa.to](https://mkissa.to), [miruro.to](https://miruro.to), and [anime.nexus](https://anime.nexus), directly inside Jellyfin's web interface.
 
@@ -38,7 +38,7 @@ This plugin is a lightweight downloader built into Jellyfin for convenience. If 
 1. In Jellyfin, go to **Dashboard > Plugins > Repositories**
 2. Add a new repository with this URL:
    ```
-   https://raw.githubusercontent.com/SiroxCW/Jellyfin-AniWorld-Downloader/main/manifest.json
+   https://raw.githubusercontent.com/a730/Jellyfin-Anime-Downloader/main/manifest.json
    ```
 4. Go to **Catalog**, find **AniWorld Downloader**, and click **Install**
 5. Restart Jellyfin
@@ -49,7 +49,7 @@ Updates will show up automatically in the plugin catalog.
 
 ### Manual Install
 
-1. Download the latest `.zip` from [Releases](https://github.com/SiroxCW/Jellyfin-AniWorld-Downloader/releases)
+1. Download the latest `.zip` from [Releases](https://github.com/a730/Jellyfin-Anime-Downloader/releases)
 2. Extract it to your Jellyfin plugins directory:
    ```
    /var/lib/jellyfin/plugins/AniWorldDownloader/
