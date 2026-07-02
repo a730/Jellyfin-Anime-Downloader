@@ -92,7 +92,6 @@ jobs:
                 overview: "Download anime from aniworld.to, s.to, aniwatch.one, and animex.one directly within Jellyfin",
                 owner: "SiroxCW",
                 category: "General",
-                targetAbi: "10.11.0.0",
                 versions: [
                   {
                     version: $version,
