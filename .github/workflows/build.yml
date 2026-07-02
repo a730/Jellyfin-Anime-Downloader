@@ -1,0 +1,116 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build -c Release --no-restore
+
+      - name: Determine version
+        id: version
+        run: |
+          if [[ "${{ github.ref }}" =~ ^refs/tags/v(.+)$ ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=dev-$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Package plugin
+        run: |
+          mkdir -p artifact
+          cp Jellyfin.Plugin.AniWorld/bin/Release/net9.0/*.dll artifact/
+          cp Jellyfin.Plugin.AniWorld/meta.json artifact/
+          cd artifact && zip -r "../Jellyfin.Plugin.AniWorld-${{ steps.version.outputs.version }}.zip" .
+
+      - name: Compute checksum
+        id: checksum
+        run: |
+          echo "sha256=$(sha256sum Jellyfin.Plugin.AniWorld-${{ steps.version.outputs.version }}.zip | cut -d' ' -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Jellyfin.Plugin.AniWorld-${{ steps.version.outputs.version }}
+          path: artifact/
+          if-no-files-found: error
+
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: AniWorld Plugin v${{ steps.version.outputs.version }}
+          body: |
+            Changes in v${{ steps.version.outputs.version }}:
+
+            Extract the zip into your Jellyfin `plugins` directory and restart Jellyfin.
+          files: Jellyfin.Plugin.AniWorld-${{ steps.version.outputs.version }}.zip
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Jellyfin plugin manifest
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          CHANGELOG=$(sed -n '/^v'"$VERSION"'/,/^v[0-9]/p' Jellyfin.Plugin.AniWorld/meta.json | sed '$d' | jq -Rs .)
+          TIMESTAMP=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+
+          jq -n --arg version "$VERSION" \
+            --arg changelog "$CHANGELOG" \
+            --arg timestamp "$TIMESTAMP" \
+            --arg sha256 "${{ steps.checksum.outputs.sha256 }}" \
+            --arg url "https://github.com/${{ github.repository }}/releases/download/v$VERSION/Jellyfin.Plugin.AniWorld-$VERSION.zip" \
+            '[
+              {
+                guid: "e93d1d02-df60-4545-ae3c-7bb87dff024c",
+                name: "AniWorld Multi-Site Downloader",
+                description: "Search, browse, and download anime and series from aniworld.to, s.to, aniwatch.one, and animex.one directly within Jellyfin. Supports VOE, Filemoon, Vidoza, and Vidmoly providers with multiple language options including English Dub and English Sub.",
+                overview: "Download anime from aniworld.to, s.to, aniwatch.one, and animex.one directly within Jellyfin",
+                owner: "SiroxCW",
+                category: "General",
+                targetAbi: "10.11.0.0",
+                versions: [
+                  {
+                    version: $version,
+                    changelog: $changelog,
+                    targetAbi: "10.11.0.0",
+                    timestamp: $timestamp,
+                    sourceUrl: $url,
+                    checksum: $sha256,
+                    checksumType: "sha256"
+                  }
+                ]
+              }
+            ]' > manifest.json
+
+      - name: Commit manifest to main
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add manifest.json
+          git diff --cached --quiet || git commit -m "Update plugin manifest for v${{ steps.version.outputs.version }}"
+          git push

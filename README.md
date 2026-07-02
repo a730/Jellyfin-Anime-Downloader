@@ -2,8 +2,9 @@
 
 ![GitHub Release](https://img.shields.io/github/v/release/a730/Jellyfin-Anime-Downloader)
 ![GitHub License](https://img.shields.io/github/license/a730/Jellyfin-Anime-Downloader)
+[![Build and Release](https://github.com/a730/Jellyfin-Anime-Downloader/actions/workflows/build.yml/badge.svg)](https://github.com/a730/Jellyfin-Anime-Downloader/actions/workflows/build.yml)
 
-A Jellyfin plugin for searching and downloading anime and series from [aniworld.to](https://aniworld.to), [s.to](https://s.to), [mkissa.to](https://mkissa.to), [miruro.to](https://miruro.to), and [anime.nexus](https://anime.nexus), directly inside Jellyfin's web interface.
+A Jellyfin plugin for searching and downloading anime and series from [aniworld.to](https://aniworld.to), [s.to](https://s.to), [aniwatch.one](https://aniwatch.one), and [animex.one](https://animex.one), directly inside Jellyfin's web interface.
 
 Series View| Search View
 :---:|:---:
@@ -13,7 +14,7 @@ Series View| Search View
 
 - **Search and browse** anime and series with cover art, popular titles, and new releases
 - **Download** individual episodes, full seasons, or entire series
-- **Six sites supported**: aniworld.to, s.to, mkissa.to, miruro.to, and anime.nexus
+- **Four sites supported**: aniworld.to, s.to, aniwatch.one, and animex.one
 - **Multiple languages**: English Dub, English Sub, German Dub, German Sub
 - **Multiple providers**: VOE, Filemoon, Vidoza and Vidmoly
 - **Download manager** with real-time progress, cancel, retry, and batch operations
@@ -37,6 +38,7 @@ This plugin is a lightweight downloader built into Jellyfin for convenience. If 
 
 1. In Jellyfin, go to **Dashboard > Plugins > Repositories**
 2. Add a new repository with this URL:
+   ```
    ```
    https://raw.githubusercontent.com/a730/Jellyfin-Anime-Downloader/main/manifest.json
    ```
@@ -66,11 +68,11 @@ cd Jellyfin.Plugin.AniWorld
 dotnet build --configuration Release
 ```
 
-Then copy the output:
+The plugin DLL and all its dependencies are in `bin/Release/net9.0/`. Copy the whole folder to Jellyfin's plugins directory:
 
 ```bash
 mkdir -p /var/lib/jellyfin/plugins/AniWorldDownloader
-cp bin/Release/net9.0/Jellyfin.Plugin.AniWorld.dll /var/lib/jellyfin/plugins/AniWorldDownloader/
+cp -r bin/Release/net9.0/*.dll /var/lib/jellyfin/plugins/AniWorldDownloader/
 cp meta.json /var/lib/jellyfin/plugins/AniWorldDownloader/
 sudo systemctl restart jellyfin
 ```
@@ -91,7 +93,7 @@ After installing, go to **Dashboard > Plugins > AniWorld Downloader** to configu
 | Movie download path | Default save location for movies (should point to a Jellyfin library folder) |
 | Language Fallback order | When the requested language is unavailable, fall back to other languages in the chosen priority order (default: No Fallback) |
 
-### Per-site settings (all 6 sites)
+### Per-site settings (all 4 sites)
 
 Each site can be enabled or disabled independently and has its own settings. If a per-site setting is left empty, the global default is used.
 
@@ -99,9 +101,8 @@ Each site can be enabled or disabled independently and has its own settings. If 
 |------|-------|-----------|
 | aniworld.to | Anime | German Dub, English Sub, German Sub |
 | s.to | TV Series | German Dub, English Dub |
-| mkissa.to | Anime | English Dub, English Sub |
-| miruro.to | Anime | English Dub, English Sub |
-| anime.nexus | Anime | English Dub, English Sub |
+| aniwatch.one | Anime | English Sub, English Dub |
+| animex.one | Anime | English Sub, English Dub |
 
 | Setting | Description |
 |---------|-------------|
@@ -149,10 +150,10 @@ Non-admin users will see an **AniWorld Downloader** entry in the sidebar that op
 
 | Provider | Sites | Method |
 |----------|-------|--------|
-| **VOE** | All 6 sites | Decodes obfuscated JSON (ROT13, base64, char shift) to extract HLS URLs |
-| **Filemoon** | All 6 sites | Handles both modern Byse API (AES-256-GCM) and legacy packed JS |
-| **Vidmoly** | All 6 sites | Extracts HLS URLs from JavaScript sources |
-| **Vidoza** | All 6 sites | Extracts MP4 URLs from source tags |
+| **VOE** | All 4 sites | Decodes obfuscated JSON (ROT13, base64, char shift) to extract HLS URLs |
+| **Filemoon** | All 4 sites | Handles both modern Byse API (AES-256-GCM) and legacy packed JS |
+| **Vidmoly** | All 4 sites | Extracts HLS URLs from JavaScript sources |
+| **Vidoza** | All 4 sites | Extracts MP4 URLs from source tags |
 
 ## Known Issues
 
