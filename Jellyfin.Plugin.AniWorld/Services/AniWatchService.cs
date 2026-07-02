@@ -34,9 +34,8 @@ public class AniWatchService : StreamingSiteService
 
     private static readonly Regex AwSearchResultItem = new(
         @"<div[^>]*class=""flw-item""[^>]*>.*?" +
-        @"<a[^>]*href=""(?<url>/watch/[^""]+)""[^>]*>.*?" +
         @"<img[^>]*(?:data-src|src)=""(?<cover>[^""]+)""[^>]*>.*?" +
-        @"<h3[^>]*class=""film-name""[^>]*><a[^>]*>(?<title>[^<]+)</a>",
+        @"<h3[^>]*class=""film-name""[^>]*><a[^>]*href=""(?<url>/watch/[^""]+)""[^>]*>(?<title>[^<]+)</a>",
         RegexOptions.Singleline | RegexOptions.Compiled);
 
     private static readonly Regex AwEpisodeItem = new(
@@ -365,9 +364,8 @@ public class AniWatchService : StreamingSiteService
 
         var itemPattern = new Regex(
             @"<div[^>]*class=""flw-item""[^>]*>.*?" +
-            @"<a[^>]*href=""(?<url>/watch/[^""]+)""[^>]*>.*?" +
             @"<img[^>]*(?:data-src|src)=""(?<cover>[^""]+)""[^>]*>.*?" +
-            @"<h3[^>]*class=""film-name""[^>]*><a[^>]*>(?<name>[^<]+)</a>",
+            @"<h3[^>]*class=""film-name""[^>]*><a[^>]*href=""(?<url>/watch/[^""]+)""[^>]*>(?<name>[^<]+)</a>",
             RegexOptions.Singleline | RegexOptions.Compiled);
 
         foreach (Match match in itemPattern.Matches(html))
